@@ -22,6 +22,7 @@ public class NotificationMessagesPlugin extends Plugin
 	private static final String INVENTORY_PET = "You feel something weird sneaking into your backpack";
 	private static final String DUPE_PET = "You have a funny feeling like you would have been followed";
 	private static final String NEW_PB = "new personal best";
+	private static final String NEW_TOB_PB = "Personal best!";
 
 	@Inject
 	private NotificationMessagesConfig config;
@@ -62,7 +63,7 @@ public class NotificationMessagesPlugin extends Plugin
 						notifier.notify(config.PetDupeMessage());
 					}
 				}
-				if (chatMessage.getMessage().contains(NEW_PB))
+				if (chatMessage.getMessage().contains(NEW_PB) || chatMessage.getMessage().contains(NEW_TOB_PB))
 				{
 					if (config.notifyOnPersonalBest())
 					{
