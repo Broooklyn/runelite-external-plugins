@@ -5,11 +5,11 @@ import javax.inject.Inject;
 
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.events.ChatMessage;
-import net.runelite.client.Notifier;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.config.RuneLiteConfig;
 
 @Slf4j
 @PluginDescriptor(
@@ -28,7 +28,13 @@ public class NotificationMessagesPlugin extends Plugin
 	private NotificationMessagesConfig config;
 
 	@Inject
-	private Notifier notifier;
+	private ConfigManager configManager;
+
+	@Inject
+	private RuneLiteConfig runeLiteConfig;
+
+	@Inject
+	private NotificationMessagesNotifier notifier;
 
 	@Provides
 	NotificationMessagesConfig provideConfig(ConfigManager configManager)
@@ -39,7 +45,7 @@ public class NotificationMessagesPlugin extends Plugin
 	@Subscribe
 	public void onChatMessage(ChatMessage chatMessage)
 	{
-			switch (chatMessage.getType())
+		switch (chatMessage.getType())
 			{
 			case GAMEMESSAGE:
 				if (chatMessage.getMessage().contains(FOLLOW_PET))
@@ -79,7 +85,12 @@ public class NotificationMessagesPlugin extends Plugin
 						notifier.notify(config.personalBestMessage());
 					}
 				}
-					break;
+				break;
+			case FRIENDSCHAT:
+				if (chatMessage.getMessage().contains("Test"))
+				{
+					notifier.notify("ALERT: THIS IS A TEST");
+				}
 			}
 	}
 }
