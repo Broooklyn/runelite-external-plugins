@@ -226,4 +226,28 @@ public interface NotificationMessagesConfig extends Config
 	{
 		return "Your Stamina potion has expired!";
 	}
+
+	@ConfigItem(
+		keyName = "imbuedHeartNotification",
+		name = "Imbued Heart notification",
+		description = "Notifies you when your Imbued heart has regained its power",
+		position = 17,
+		section = potionSection
+	)
+	default boolean imbuedHeartNotification()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "imbuedHeartMessage",
+		name = "Imbued heart notification message",
+		description = "The message with which to notify you of an Imbued heart's reinvigoration",
+		position = 18,
+		section = potionSection
+	)
+	default String imbuedHeartMessage()
+	{
+		return "Your Imbued heart is ready!";
+	}
 }
