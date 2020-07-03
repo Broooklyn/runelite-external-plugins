@@ -1,13 +1,13 @@
-package com.example;
+package com.brooklyn.smartmetronome;
 
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;
 
-public class ExamplePluginTest
+public class SmartMetronomePluginTest
 {
 	public static void main(String[] args) throws Exception
 	{
-		ExternalPluginManager.loadBuiltin(ExamplePlugin.class);
+		ExternalPluginManager.loadBuiltin(SmartMetronomePlugin.class);
 		RuneLite.main(args);
 	}
 }
