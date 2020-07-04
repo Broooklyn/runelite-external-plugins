@@ -14,6 +14,7 @@ import net.runelite.client.config.RuneLiteConfig;
 @Slf4j
 @PluginDescriptor(
 	name = "Notification Messages",
+	description = "Notify yourself with custom messages",
 	tags = "hub,chat,notify,pet,pb,personal best,follow,follower"
 )
 public class NotificationMessagesPlugin extends Plugin

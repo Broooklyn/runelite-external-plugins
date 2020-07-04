@@ -63,7 +63,17 @@ Notifies you when your Stamina potion expires.
 ### Stamina notification message
 The message with which to notify you of a Stamina potion's expiration.
 
+### Imbued Heart notification
+Notifies you when your Imbued Heart has regained its power.
+
+### Imbued Heart notification message
+The message with which to notify you when your Imbued Heart has regained its power.
+
 # Changelog
+#### 1.1.1
+* Added Imbued Heart notification messages.
+* Update plugin description.
+
 #### 1.1
 * Added Antifire notification messages.
 * Added Antipoison notification messages.

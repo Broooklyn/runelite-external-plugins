@@ -241,7 +241,7 @@ public interface NotificationMessagesConfig extends Config
 
 	@ConfigItem(
 		keyName = "imbuedHeartMessage",
-		name = "Imbued heart notification message",
+		name = "Imbued Heart notification message",
 		description = "The message with which to notify you of an Imbued heart's reinvigoration",
 		position = 18,
 		section = potionSection
