@@ -196,14 +196,16 @@ public class SmartMetronomePlugin extends Plugin
 		willTickManipulate = false;
 
 		for (int Herb : herbSet)
-		for (int Vamb : vambSet)
 		{
-			if ((itemContainer.contains(Herb) && itemContainer.contains(ItemID.SWAMP_TAR))
-				|| (itemContainer.contains(Vamb) && itemContainer.contains(ItemID.KEBBIT_CLAWS))
-				|| (itemContainer.contains(ItemID.KNIFE) && itemContainer.contains(ItemID.TEAK_LOGS)))
+			for (int Vamb : vambSet)
 			{
-				willTickManipulate = true;
-				break;
+				if ((itemContainer.contains(Herb) && itemContainer.contains(ItemID.SWAMP_TAR))
+					|| (itemContainer.contains(Vamb) && itemContainer.contains(ItemID.KEBBIT_CLAWS))
+					|| (itemContainer.contains(ItemID.KNIFE) && itemContainer.contains(ItemID.TEAK_LOGS)))
+				{
+					willTickManipulate = true;
+					break;
+				}
 			}
 		}
 	}
