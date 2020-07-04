@@ -81,6 +81,7 @@ public class SmartMetronomePlugin extends Plugin
 		13972, // Kalphite Queen
 		11346, // Kree'arra
 		15515, // Nightmare of Ashihama
+		7322, // Sarachnis
 		6810, // Skotizo
 		9363, 9619, // Thermonuclear smoke devil
 		9023, // Vorkath

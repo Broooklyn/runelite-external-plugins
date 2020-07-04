@@ -32,6 +32,7 @@ Smart Metronome automatically ticks in the following locations:
 * Nightmare of Ashihama
 * Pest Control
 * Pyramid Plunder
+* Sarachnis
 * Skotizo
 * Theatre of Blood
 * Thermonuclear smoke devil
