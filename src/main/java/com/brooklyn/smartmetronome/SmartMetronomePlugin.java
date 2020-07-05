@@ -103,12 +103,19 @@ public class SmartMetronomePlugin extends Plugin
 		13660, 13659, 13658, 13916, 13915, 13914, // Last Man Standing
 		10536, // Pest Control
 		7749, // Pyramid Plunder
-		6968, // Tithe Farm
+		7222, // Tithe Farm
 		15263, 15262 // Volcanic Mine
 	);
 
 	private static final Set<Integer> MUTE_METRONOME_IDS = ImmutableSet.of(
-		9565 // Sepulchre Lobby
+		9565, // Sepulchre Lobby
+		13619, 13874, 13875, 13876, 14130, // Areas around Barrows
+		14387, 14388, 14132, // Meyerditch/Darkmeyer
+		9263, 9264, 9265, 9519, 9775, 9776, 9777, 9519, 9521, // Areas around Castle Wars
+		11412, 11413, 11414, 10901, 10900, // Areas around Agility Arena
+		9808, 9807, 9552, // Areas around fight cave
+		6205, 6461, 6717, // Areas around Wintertodt
+		7478, 7479, 7223, 6965, 6967, 6966, 7211 // Areas around Tithe Farm
 	);
 
 	private boolean muteMetronomeIDs()
