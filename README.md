@@ -17,6 +17,7 @@ Smart Metronome automatically ticks in the following locations:
 * Cerberus
 * Chambers of Xeric
 * Commander Zilyana
+* Corporeal Beast
 * Dagannoth Kings
 * Fight Cave
 * Gauntlet
@@ -50,9 +51,3 @@ Smart Metronome automatically ticks when you have the following in your inventor
 * Herb + Swamp Tar
 * Knife + Teak Logs
 * Vambraces + Kebbit Claw
-
-
-
-
-***
-<div>Icon made by <a href="http://www.freepik.com/" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
