@@ -183,7 +183,7 @@ public class SmartMetronomePlugin extends Plugin
 		7492, 7748, // Pyramid Plunder
 		7323, // Sarachnis
 		9565, // Sepulchre Lobby
-		6710, 6711, 7224, 7478, 7479, 7223, 6965, 6967, 6966, 7221, // Tithe Farm
+		6710, 6711, 6965, 6966, 6967, 6968, 7221, 7223, 7224, 7478, 7479, // Tithe Farm
 		15008, 15264, 15519, 15775, // Volcanic Mine
 		6205, 6461, 6717, // Wintertodt
 		8495, 8496, 8751, 8752, 9008, 9263, 9264, 9265 // Zulrah
