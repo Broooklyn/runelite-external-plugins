@@ -29,6 +29,7 @@ import net.runelite.api.SoundEffectVolume;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
+import net.runelite.client.config.ConfigSection;
 import net.runelite.client.config.Range;
 
 @ConfigGroup("metronome")
@@ -36,10 +37,18 @@ public interface SmartMetronomeConfig extends Config
 {
 	int VOLUME_MAX = SoundEffectVolume.HIGH;
 
+	@ConfigSection(
+		name = "Settings",
+		description = "Smart Metronome Settings",
+		position = 0
+	)
+	String settingsSection = "Settings";
+
 	@ConfigItem(
 		keyName = "tickCount",
 		name = "Tick count",
-		description = "Configures the tick on which a sound will be played."
+		description = "Configures the tick on which a sound will be played.",
+		section = settingsSection
 	)
 	default int tickCount()
 	{
@@ -52,7 +61,8 @@ public interface SmartMetronomeConfig extends Config
 	@ConfigItem(
 		keyName = "tickVolume",
 		name = "Tick volume",
-		description = "Configures the volume of the tick sound. A value of 0 will disable tick sounds."
+		description = "Configures the volume of the tick sound. A value of 0 will disable tick sounds.",
+		section = settingsSection
 	)
 	default int tickVolume()
 	{
@@ -65,7 +75,8 @@ public interface SmartMetronomeConfig extends Config
 	@ConfigItem(
 		keyName = "tockVolume",
 		name = "Tock volume",
-		description = "Configures the volume of the tock sound. A value of 0 will disable tock sounds."
+		description = "Configures the volume of the tock sound. A value of 0 will disable tock sounds.",
+		section = settingsSection
 	)
 	default int tockVolume()
 	{
@@ -75,7 +86,9 @@ public interface SmartMetronomeConfig extends Config
 	@ConfigItem(
 		keyName = "smartMetronome",
 		name = "Enable Smart Metronome",
-		description = "Enables location/activity specific metronome. Disable for normal metronome."
+		description = "Enables location/activity specific metronome. Disable for normal metronome.",
+		position = -2,
+		section = settingsSection
 	)
 	default boolean smartMetronome()
 	{
