@@ -1,53 +1,77 @@
 # Smart Metronome
 
+![icon](https://user-images.githubusercontent.com/54762282/92647672-44c5ba00-f2b6-11ea-99bd-b4193a6592de.png)
+
 A metronome plugin that automatically ticks when you are in a location or are doing an activity in which it is useful, and then automatically stops when you leave.
 
-`Enable Smart Metronome` enables automatic activation. Disable to stop the "Smart" feature and metronome will tick as normal. 
 
-## Locations
-Smart Metronome automatically ticks in the following locations:
+## Settings
+* Override
+    * Overrides Smart Metronome and enables the metronome everywhere.
+* Tick count
+    * Configures the ticks on which the metronome sound(s) play.
+* Tick volume
+    * Configures the volume of the tick sound. A value of `0` disables the tick sound.
+* Tock volume
+    * Configures the volume of the tock sound. A value of `0` disables the tock sound.
 
+## Metronome
+Configs can be individually disabled if you do not wish to enable Smart Metronome at one of the locations.
+
+### Bosses
 * Abyssal Sire
 * Alchemical Hydra
-* Barbarian Assault
 * Barrows
-* Blast Furnace
-* Brimhaven Agility Course
-* Castle Wars
 * Cerberus
-* Chambers of Xeric
 * Commander Zilyana
 * Corporeal Beast
 * Dagannoth Kings
-* Fight Cave
-* Gauntlet
 * General Graardor
 * Giant Mole
 * Grotesque Guardians
-* Hallowed Sepulchre
-* Inferno
 * K'ril Tsutsaroth
 * Kalphite Queen
 * Kree'arra
-* Last Man Standing
 * Nightmare of Ashihama
-* Pest Control
-* Pyramid Plunder
 * Sarachnis
 * Skotizo
-* Theatre of Blood
 * Thermonuclear smoke devil
-* Tithe Farm
-* Volcanic Mine
 * Vorkath
-* Wilderness
 * Wintertodt
 * Zalcano
 * Zulrah
 
-## Skilling
-Smart Metronome automatically ticks when you have the following in your inventory:
+### Minigames
+* Barbarian Assault
+* Blast Furnace
+* Brimhaven Agility Course
+* Fight Cave
+* Gauntlet
+* Hallowed Sepulchre
+* Inferno
+* Pest Control
+* Pyramid Plunder
+* Tithe Farm
+* Volcanic Mine
 
-* Herb + Swamp Tar
-* Knife + Teak Logs
-* Vambraces + Kebbit Claw
+### Raids
+* Chambers of Xeric
+* Theatre of Blood
+
+### Slayer
+* Catacombs of Kourend
+* Fremennik Slayer Cave
+* Stronghold Slayer Dungeon
+* Slayer Tower
+
+### Other
+* PvP
+    * Castle Wars
+    * Clan Wars
+    * Last Man Standing
+    * PvP Worlds
+    * Wilderness
+* Tick Manipulation Items
+    * Herb + Swamp Tar
+    * Knife + Teak Logs
+    * Vambraces + Kebbit Claw
