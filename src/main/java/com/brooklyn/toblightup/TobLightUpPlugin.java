@@ -25,6 +25,7 @@
 package com.brooklyn.toblightup;
 
 import javax.inject.Inject;
+import com.google.common.collect.ImmutableSet;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.events.GameTick;
@@ -32,6 +33,7 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import java.util.Set;
 
 @Slf4j
 @PluginDescriptor(
@@ -56,9 +58,14 @@ public class TobLightUpPlugin extends Plugin
 		hideDarkness(false);
 	}
 
+	private static final Set<Integer> VER_SINHAZA_REGIONS = ImmutableSet.of(
+		14386,
+		14642
+	);
+
 	private boolean isInVerSinhaza()
 	{
-		return client.getLocalPlayer().getWorldLocation().getRegionID() == 14642;
+		return VER_SINHAZA_REGIONS.contains(client.getLocalPlayer().getWorldLocation().getRegionID());
 	}
 
 	@Subscribe
