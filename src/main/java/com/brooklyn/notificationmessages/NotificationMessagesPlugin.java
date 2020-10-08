@@ -36,6 +36,8 @@ public class NotificationMessagesPlugin extends Plugin
 	private static final String OVERLOAD = "The effects of overload have worn off, and you feel normal again.";
 	private static final String STAMINA = "Your stamina enhancement has expired.";
 	private static final String IMBUED_HEART = "Your imbued heart has regained its magical power.";
+	private static final String PRE_SUPER_ANTIFIRE = "Your super antifire potion is about to expire";
+	private static final String PRE_ANTIFIRE = "Your antifire potion is about to expire";
 
 	@Inject
 	private NotificationMessagesConfig config;
@@ -129,6 +131,13 @@ public class NotificationMessagesPlugin extends Plugin
 					if (config.imbuedHeartNotification())
 					{
 						notifier.notify(config.imbuedHeartMessage());
+					}
+				}
+				if (chatMessage.getMessage().contains(PRE_SUPER_ANTIFIRE) || chatMessage.getMessage().contains(PRE_ANTIFIRE))
+				{
+					if (config.preAntifire())
+					{
+						notifier.notify(config.preAntifireMessage());
 					}
 				}
 					break;

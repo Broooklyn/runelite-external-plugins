@@ -132,6 +132,30 @@ public interface NotificationMessagesConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "preAntifire",
+		name = "Pre-Antifire expiration",
+		description = "Notifies you before your antifire expires",
+		position = 8,
+		section = potionSection
+	)
+	default boolean preAntifire()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "preAntifireMessage",
+		name = "Pre-Antifire notification message",
+		description = "The message with which to notify you before an antifire's expiration",
+		position = 8,
+		section = potionSection
+	)
+	default String preAntifireMessage()
+	{
+		return "Your antifire protection is about to expire!";
+	}
+
+	@ConfigItem(
 		keyName = "antipoisonNotification",
 		name = "Antipoison expiration",
 		description = "Notifies you when your antipoison expires",
