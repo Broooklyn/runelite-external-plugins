@@ -34,6 +34,7 @@ import net.runelite.api.Client;
 import net.runelite.api.InventoryID;
 import net.runelite.api.ItemContainer;
 import net.runelite.api.ItemID;
+import net.runelite.api.Preferences;
 import net.runelite.api.SoundEffectID;
 import net.runelite.api.Varbits;
 import net.runelite.api.events.GameTick;
@@ -650,20 +651,21 @@ public class SmartMetronomePlugin extends Plugin
 	{
 		if (++tickCounter % config.tickCount() == 0)
 		{
-			int previousVolume = client.getSoundEffectVolume();
+			Preferences preferences = client.getPreferences();
+			int previousVolume = preferences.getSoundEffectVolume();
 
 			if (shouldTock && config.tockVolume() > 0)
 			{
-				client.setSoundEffectVolume(config.tockVolume());
+				preferences.setSoundEffectVolume(config.tockVolume());
 				client.playSoundEffect(SoundEffectID.GE_DECREMENT_PLOP, config.tockVolume());
 			}
 			else if (config.tickVolume() > 0)
 			{
-				client.setSoundEffectVolume(config.tickVolume());
+				preferences.setSoundEffectVolume(config.tickVolume());
 				client.playSoundEffect(SoundEffectID.GE_INCREMENT_PLOP, config.tickVolume());
 			}
 
-			client.setSoundEffectVolume(previousVolume);
+			preferences.setSoundEffectVolume(previousVolume);
 
 			shouldTock = !shouldTock;
 		}
