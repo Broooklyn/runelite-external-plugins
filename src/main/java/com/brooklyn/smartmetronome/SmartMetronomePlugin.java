@@ -636,7 +636,7 @@ public class SmartMetronomePlugin extends Plugin
 
 	private boolean varbits()
 	{
-		boolean inCoX = client.getVar(Varbits.IN_RAID) == 1;
+		boolean inCoX = client.getVar(Varbits.RAID_STATE) == 1;
 		boolean inBA = client.getVar(Varbits.IN_GAME_BA) == 1;
 		boolean inPvP = client.getVar(Varbits.PVP_SPEC_ORB) == 1;
 		boolean inToB = client.getVar(Varbits.THEATRE_OF_BLOOD) == 2;
