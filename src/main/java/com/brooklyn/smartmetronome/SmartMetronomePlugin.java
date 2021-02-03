@@ -324,7 +324,7 @@ public class SmartMetronomePlugin extends Plugin
 		13619, 13874, 13875, 13876, 14130, 14488, 14232, 14487,  // Barrows
 		5139, // Cerberus lobby
 		11586, 11587, 11841, 11843, 11845, 12097, 12098, 12099, 12100, 12101, // Corp
-		9808, 9807, 9552, 10063, // Fight Cave
+		9808, 9807, 9552, 10063, 10064, // Fight Cave
 		5535, 5280, 5279, 5023, 5278, // Hydra
 		14387, 14388, 14132, // Meyerditch/Darkmeyer
 		10537, // Pest Control
