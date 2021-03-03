@@ -24,11 +24,12 @@
  */
 package com.brooklyn.currentworld;
 
-import java.awt.Color;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
+
+import java.awt.Color;
 
 @ConfigGroup("currentworld")
 public interface CurrentWorldConfig extends Config
@@ -37,7 +38,7 @@ public interface CurrentWorldConfig extends Config
 		name = "Overlay Colors",
 		description = "Overlay colors",
 		closedByDefault = true,
-		position = 3
+		position = 4
 	)
 	String colorSection = "colorSection";
 
@@ -61,6 +62,17 @@ public interface CurrentWorldConfig extends Config
 	default boolean showOverlay()
 	{
 		return true;
+	}
+
+	@ConfigItem(
+			keyName = "overlayActivity",
+			name = "Overlay Activity",
+			description = "Adds world activity to the overlay, instead of<br>only warning for PvP and High Risk worlds.",
+			position = 3
+	)
+	default boolean overlayActivity()
+	{
+		return false;
 	}
 
 	@ConfigItem(
