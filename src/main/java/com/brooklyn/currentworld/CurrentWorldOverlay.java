@@ -26,26 +26,35 @@ package com.brooklyn.currentworld;
 
 import net.runelite.api.Client;
 import net.runelite.api.WorldType;
+import net.runelite.client.game.WorldService;
+import net.runelite.client.ui.overlay.components.ComponentOrientation;
+import net.runelite.client.ui.overlay.components.TitleComponent;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayPriority;
-import net.runelite.client.ui.overlay.components.ComponentOrientation;
-import net.runelite.client.ui.overlay.components.TitleComponent;
+import net.runelite.http.api.worlds.World;
+import net.runelite.http.api.worlds.WorldResult;
 
 import javax.inject.Inject;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class CurrentWorldOverlay extends OverlayPanel
 {
 	private final Client client;
 	private final CurrentWorldConfig config;
+	private final WorldService worldService;
 
 	@Inject
-	private CurrentWorldOverlay(Client client, CurrentWorldConfig config)
+	private CurrentWorldOverlay(Client client, CurrentWorldConfig config, WorldService worldService)
 	{
 		this.client = client;
 		this.config = config;
+		this.worldService = worldService;
 		setPriority(OverlayPriority.HIGH);
 		setPosition(OverlayPosition.TOP_RIGHT);
 	}
@@ -63,26 +72,49 @@ public class CurrentWorldOverlay extends OverlayPanel
 			panelComponent.getChildren().remove(0);
 		}
 
-		final int currentWorld = client.getWorld();
+		WorldResult worldResult = worldService.getWorlds();
 		final boolean pvpWorld = client.getWorldType().contains(WorldType.PVP) || client.getWorldType().contains(WorldType.DEADMAN);
 		final boolean highRiskWorld = client.getWorldType().contains(WorldType.HIGH_RISK);
+		final Color textColor = pvpWorld ? config.pvpWorldColor() : highRiskWorld ? config.highRiskWorldColor() : config.safeWorldColor();
+		final List<String> textToDisplay = new ArrayList<>();
 
+		if (!config.overlayActivity() && (pvpWorld || highRiskWorld))
+		{
+			textToDisplay.add(pvpWorld ? "PVP WORLD" : "HIGH RISK");
+		}
+
+		textToDisplay.add("World " + client.getWorld());
+
+		if (config.overlayActivity() && worldResult != null)
+		{
+			final World currentWorld = worldResult.findWorld(client.getWorld());
+
+			if (!"-".equals(currentWorld.getActivity()))
+			{
+				textToDisplay.add(currentWorld.getActivity());
+			}
+		}
+
+		final int overlayWidth = calculateWidth(graphics, textToDisplay) + 10;
 		panelComponent.setOrientation(ComponentOrientation.VERTICAL);
-		panelComponent.setPreferredSize(new Dimension(67,0));
+		panelComponent.setPreferredSize(new Dimension(overlayWidth, 0));
 
-		if (pvpWorld || highRiskWorld)
+		for (String text : textToDisplay)
 		{
 			panelComponent.getChildren().add(TitleComponent.builder()
-				.text(pvpWorld ? "PVP WORLD" : "HIGH RISK")
-				.color(pvpWorld ? config.pvpWorldColor() : config.highRiskWorldColor())
+				.text(text)
+				.color(textColor)
 				.build());
 		}
 
-		panelComponent.getChildren().add(TitleComponent.builder()
-			.text("World " + currentWorld)
-			.color(pvpWorld ? config.pvpWorldColor() : highRiskWorld ? config.highRiskWorldColor() : config.safeWorldColor())
-			.build());
-
 		return super.render(graphics);
+	}
+
+	private int calculateWidth(Graphics2D graphics, Collection<String> textToDisplay)
+	{
+		return textToDisplay.stream()
+			.mapToInt(line -> graphics.getFontMetrics().stringWidth(line))
+			.max()
+			.orElseThrow(() -> new IllegalArgumentException("Can't calculate overlay width"));
 	}
 }
