@@ -126,7 +126,7 @@ public class CurrentWorldPlugin extends Plugin
 	{
 		WorldResult worldResult = worldService.getWorlds();
 
-		if (worldService != null)
+		if (worldResult != null)
 		{
 			World world = worldResult.findWorld(client.getWorld());
 			activity = world.getActivity();

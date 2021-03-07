@@ -37,27 +37,15 @@ public interface CurrentWorldConfig extends Config
 	@ConfigSection(
 		name = "Overlay Colors",
 		description = "Overlay colors",
-		closedByDefault = true,
 		position = 4
 	)
 	String colorSection = "colorSection";
 
 	@ConfigItem(
-		keyName = "worldSwitcherActivity",
-		name = "World Switcher Activity",
-		description = "Adds world activity to the Jagex world switcher<br>e.g., 'Sulliuscep cutting' and '2200 Skill total'",
-		position = 1
-	)
-	default boolean worldSwitcherActivity()
-	{
-		return true;
-	}
-
-	@ConfigItem(
 		keyName = "showOverlay",
 		name = "Overlay",
 		description = "Enables the current world overlay",
-		position = 2
+		position = 1
 	)
 	default boolean showOverlay()
 	{
@@ -68,11 +56,22 @@ public interface CurrentWorldConfig extends Config
 			keyName = "overlayActivity",
 			name = "Overlay Activity",
 			description = "Adds world activity to the overlay, instead of<br>only warning for PvP and High Risk worlds.",
-			position = 3
+			position = 2
 	)
 	default boolean overlayActivity()
 	{
 		return false;
+	}
+
+	@ConfigItem(
+		keyName = "worldSwitcherActivity",
+		name = "World Switcher Activity",
+		description = "Adds world activity to the Jagex world switcher<br>e.g., 'Sulliuscep cutting' or '2200 Skill total'",
+		position = 3
+	)
+	default boolean worldSwitcherActivity()
+	{
+		return true;
 	}
 
 	@ConfigItem(
