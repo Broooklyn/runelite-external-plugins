@@ -1,5 +1,5 @@
-# Brooklyn's External Plugins
+# ToB Notice Board
 
-Check the branches for the source code for my external plugins.
+Highlight friends and clan members on the Theatre of Blood Notice Board
 
-If you need support, open an issue above.
+<img width="500" alt="tob notice board" src="https://user-images.githubusercontent.com/54762282/110707004-acf24b80-81c6-11eb-97ab-9a078d30591c.png">

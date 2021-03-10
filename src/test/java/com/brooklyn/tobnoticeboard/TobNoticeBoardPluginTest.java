@@ -1,13 +1,13 @@
-package com.example;
+package com.brooklyn.tobnoticeboard;
 
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;
 
-public class ExamplePluginTest
+public class TobNoticeBoardPluginTest
 {
 	public static void main(String[] args) throws Exception
 	{
-		ExternalPluginManager.loadBuiltin(ExamplePlugin.class);
+		ExternalPluginManager.loadBuiltin(TobNoticeBoardPlugin.class);
 		RuneLite.main(args);
 	}
 }
