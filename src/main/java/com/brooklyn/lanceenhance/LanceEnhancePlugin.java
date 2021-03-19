@@ -25,16 +25,13 @@
 package com.brooklyn.lanceenhance;
 
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.Client;
 import net.runelite.api.Player;
 import net.runelite.api.events.ClientTick;
-import net.runelite.api.events.PlayerDespawned;
-import net.runelite.api.events.PlayerSpawned;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-
-import java.util.HashSet;
-import java.util.Set;
+import javax.inject.Inject;
 
 @Slf4j
 @PluginDescriptor(
@@ -44,24 +41,13 @@ import java.util.Set;
 )
 public class LanceEnhancePlugin extends Plugin
 {
-	private final Set<Player> players = new HashSet<>();
-
-	@Subscribe
-	public void onPlayerSpawned(PlayerSpawned event)
-	{
-		players.add(event.getPlayer());
-	}
-
-	@Subscribe
-	public void onPlayerDespawned(PlayerDespawned event)
-	{
-		players.remove(event.getPlayer());
-	}
+	@Inject
+	private Client client;
 
 	@Subscribe
 	public void onClientTick(ClientTick event)
 	{
-		for (Player player : players)
+		for (Player player : client.getPlayers())
 		{
 			if (player.getPoseAnimation() == 2563)
 			{
