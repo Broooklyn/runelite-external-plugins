@@ -28,7 +28,12 @@ import com.google.inject.Provides;
 import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.api.Friend;
 import net.runelite.api.FriendsChatMember;
+import net.runelite.api.Ignore;
+import net.runelite.api.NameableContainer;
+import net.runelite.api.ScriptID;
+import net.runelite.api.events.ScriptPostFired;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
@@ -47,6 +52,8 @@ import net.runelite.client.util.Text;
 )
 public class TobNoticeBoardPlugin extends Plugin
 {
+	private static final int DEFAULT_RGB = 0xff981f;
+
 	@Inject
 	private Client client;
 
@@ -59,14 +66,13 @@ public class TobNoticeBoardPlugin extends Plugin
 	@Override
 	public void startUp()
 	{
-		setNameColors(config.friendColor().getRGB(), config.clanColor().getRGB());
+		setNoticeBoard();
 	}
 
 	@Override
 	public void shutDown()
 	{
-		// default color
-		setNameColors(0xff981f, 0xff981f);
+		unsetNoticeBoard();
 	}
 
 	@Subscribe
@@ -74,7 +80,7 @@ public class TobNoticeBoardPlugin extends Plugin
 	{
 		if (event.getGroup().equals("tobnoticeboard"))
 		{
-			setNameColors(config.friendColor().getRGB(), config.clanColor().getRGB());
+			setNoticeBoard();
 		}
 	}
 
@@ -85,12 +91,21 @@ public class TobNoticeBoardPlugin extends Plugin
 		{
 			if (widgetLoaded.getGroupId() == 364)
 			{
-				setNameColors(config.friendColor().getRGB(), config.clanColor().getRGB());
+				setNoticeBoard();
 			}
 		});
 	}
 
-	private void setNameColors(Integer friendColor, Integer clanColor)
+	@Subscribe
+	public void onScriptPostFired(ScriptPostFired event)
+	{
+		if (event.getScriptId() == ScriptID.FRIENDS_UPDATE || event.getScriptId() == ScriptID.IGNORE_UPDATE)
+		{
+			setNoticeBoard();
+		}
+	}
+
+	private void setNameColors(int friendColor, int clanColor, int ignoreColor)
 	{
 		for (int childID = 17; childID < 62; ++childID)
 		{
@@ -102,9 +117,16 @@ public class TobNoticeBoardPlugin extends Plugin
 				{
 					if (noticeBoardChild.getIndex() == 3)
 					{
-						if (client.isFriended(Text.removeTags(noticeBoard.getName()), true))
+						NameableContainer<Ignore> ignoreContainer = client.getIgnoreContainer();
+						NameableContainer<Friend> friendContainer = client.getFriendContainer();
+
+						if (ignoreContainer.findByName(Text.removeTags(noticeBoard.getName())) != null)
 						{
-							noticeBoardChild.setTextColor(config.highlightFriends() ? friendColor : 0xff981f);
+							noticeBoardChild.setTextColor(config.highlightIgnored() ? ignoreColor : DEFAULT_RGB);
+						}
+						else if (friendContainer.findByName(Text.removeTags(noticeBoard.getName())) != null)
+						{
+							noticeBoardChild.setTextColor(config.highlightFriends() ? friendColor : DEFAULT_RGB);
 						}
 						else if (client.getFriendsChatManager() != null)
 						{
@@ -112,7 +134,7 @@ public class TobNoticeBoardPlugin extends Plugin
 							{
 								if (Text.toJagexName(member.getName()).equals(Text.removeTags(noticeBoard.getName())))
 								{
-									noticeBoardChild.setTextColor(config.highlightClan() ? clanColor : 0xff981f);
+									noticeBoardChild.setTextColor(config.highlightClan() ? clanColor : DEFAULT_RGB);
 								}
 							}
 						}
@@ -120,6 +142,16 @@ public class TobNoticeBoardPlugin extends Plugin
 				}
 			}
 		}
+	}
+
+	private void setNoticeBoard()
+	{
+		setNameColors(config.friendColor().getRGB(), config.clanColor().getRGB(), config.ignoredColor().getRGB());
+	}
+
+	private void unsetNoticeBoard()
+	{
+		setNameColors(DEFAULT_RGB, DEFAULT_RGB, DEFAULT_RGB);
 	}
 
 	@Provides

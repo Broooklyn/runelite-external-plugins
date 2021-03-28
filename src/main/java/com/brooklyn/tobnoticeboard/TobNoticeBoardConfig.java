@@ -76,4 +76,26 @@ public interface TobNoticeBoardConfig extends Config
 	{
 		return new Color(170, 0, 255);
 	}
+
+	@ConfigItem(
+		keyName = "highlightIgnored",
+		name = "Highlight Ignored players",
+		description = "Whether or not to highlight ignored players on the notice board",
+		position = 5
+	)
+	default boolean highlightIgnored()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "ignoredColor",
+		name = "Ignored color",
+		description = "The color with which to highlight names from your ignore list",
+		position = 6
+	)
+	default Color ignoredColor()
+	{
+		return new Color(182, 0, 0);
+	}
 }
