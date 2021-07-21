@@ -204,10 +204,34 @@ public interface NotificationMessagesConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "preDivinePotion",
+		name = "Pre-Divine Potion expiration",
+		description = "Notifies you before your divine potion expires",
+		position = 13,
+		section = potionSection
+	)
+	default boolean preDivinePotion()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "preDivinePotionMessage",
+		name = "Pre-Divine Potion notification message",
+		description = "The message with which to notify you before a divine potion's expiration",
+		position = 14,
+		section = potionSection
+	)
+	default String preDivinePotionMessage()
+	{
+		return "Your Divine potion is about to expire!";
+	}
+
+	@ConfigItem(
 		keyName = "overloadNotification",
 		name = "Overload expiration",
 		description = "Notifies you when your Overload expires",
-		position = 13,
+		position = 15,
 		section = potionSection
 	)
 	default boolean overloadNotification()
@@ -219,7 +243,7 @@ public interface NotificationMessagesConfig extends Config
 		keyName = "overloadMessage",
 		name = "Overload notification message",
 		description = "The message with which to notify you of an Overload's expiration",
-		position = 14,
+		position = 16,
 		section = potionSection
 	)
 	default String overloadMessage()
@@ -231,7 +255,7 @@ public interface NotificationMessagesConfig extends Config
 		keyName = "staminaNotification",
 		name = "Stamina expiration",
 		description = "Notifies you when your stamina potion expires",
-		position = 15,
+		position = 17,
 		section = potionSection
 	)
 	default boolean staminaNotification()
@@ -243,7 +267,7 @@ public interface NotificationMessagesConfig extends Config
 		keyName = "staminaMessage",
 		name = "Stamina notification message",
 		description = "The message with which to notify you of a stamina potion's expiration",
-		position = 16,
+		position = 18,
 		section = potionSection
 	)
 	default String staminaMessage()
@@ -255,7 +279,7 @@ public interface NotificationMessagesConfig extends Config
 		keyName = "imbuedHeartNotification",
 		name = "Imbued Heart notification",
 		description = "Notifies you when your Imbued heart has regained its power",
-		position = 17,
+		position = 19,
 		section = potionSection
 	)
 	default boolean imbuedHeartNotification()
@@ -267,7 +291,7 @@ public interface NotificationMessagesConfig extends Config
 		keyName = "imbuedHeartMessage",
 		name = "Imbued Heart notification message",
 		description = "The message with which to notify you of an Imbued heart's reinvigoration",
-		position = 18,
+		position = 20,
 		section = potionSection
 	)
 	default String imbuedHeartMessage()

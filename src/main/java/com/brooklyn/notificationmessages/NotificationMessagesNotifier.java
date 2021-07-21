@@ -157,7 +157,24 @@ public class NotificationMessagesNotifier
                 break;
         }
 
-        sendNotification(appName, message, type);
+        private String buildTitle()
+      	{
+      		Player player = client.getLocalPlayer();
+      		if (player == null)
+      		{
+      			return appName;
+		      }
+
+      		String name = player.getName();
+      		if (Strings.isNullOrEmpty(name))
+      		{
+			      return appName;
+		      }
+
+      		return appName + " - " + name;
+      	}
+
+        sendNotification(buildTitle(), message, type);
 
         switch (runeLiteConfig.notificationSound())
         {
