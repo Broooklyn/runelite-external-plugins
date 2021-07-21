@@ -33,6 +33,7 @@ public class NotificationMessagesPlugin extends Plugin
 	private static final String SUPER_ANTIFIRE = "Your super antifire potion has expired.";
 	private static final String ANTIPOISON = "Your poison resistance has worn off.";
 	private static final String DIVINE_POTION = "The effects of the divine potion have worn off";
+	private static final String PRE_DIVINE_POTION = "Your divine potion effect is about to expire.";
 	private static final String OVERLOAD = "The effects of overload have worn off, and you feel normal again.";
 	private static final String STAMINA = "Your stamina enhancement has expired.";
 	private static final String IMBUED_HEART = "Your imbued heart has regained its magical power.";
@@ -110,6 +111,13 @@ public class NotificationMessagesPlugin extends Plugin
 					if (config.divinePotionNotification())
 					{
 						notifier.notify(config.divinePotionMessage());
+					}
+				}
+				if (chatMessage.getMessage().contains(PRE_DIVINE_POTION))
+				{
+					if (config.preDivinePotion())
+					{
+						notifier.notify(config.preDivinePotionMessage());
 					}
 				}
 				if (chatMessage.getMessage().contains(OVERLOAD))
