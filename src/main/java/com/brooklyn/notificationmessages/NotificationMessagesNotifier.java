@@ -36,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.Player;
 import net.runelite.client.RuneLite;
 import net.runelite.client.RuneLiteProperties;
 import net.runelite.client.chat.ChatColorType;
@@ -157,7 +158,7 @@ public class NotificationMessagesNotifier
                 break;
         }
 
-        sendNotification(appName, message, type);
+        sendNotification(buildTitle(), message, type);
 
         switch (runeLiteConfig.notificationSound())
         {
@@ -183,6 +184,23 @@ public class NotificationMessagesNotifier
                 .build());
         }
         log.debug(message);
+    }
+
+    private String buildTitle()
+    {
+        Player player = client.getLocalPlayer();
+        if (player == null)
+        {
+            return appName;
+        }
+
+        String name = player.getName();
+        if (Strings.isNullOrEmpty(name))
+        {
+            return appName;
+        }
+
+        return appName + " - " + name;
     }
 
     private void sendNotification(
