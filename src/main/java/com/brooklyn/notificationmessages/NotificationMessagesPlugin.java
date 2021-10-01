@@ -160,11 +160,6 @@ public class NotificationMessagesPlugin extends Plugin
 					}
 				}
 				break;
-			case FRIENDSCHAT:
-				if (chatMessage.getMessage().contains("Test"))
-				{
-					notifier.notify("ALERT: THIS IS A TEST");
-				}
 			}
 	}
 }
