@@ -148,6 +148,11 @@ public class NotificationMessagesNotifier
     {
         eventBus.post(new NotificationFired(message, type));
 
+	if (!runeLiteConfig.sendNotificationsWhenFocused() && clientUI.isFocused())
+	{
+		return;
+	}	    
+	    
         switch (runeLiteConfig.notificationRequestFocus())
         {
             case REQUEST:
@@ -158,7 +163,10 @@ public class NotificationMessagesNotifier
                 break;
         }
 
-        sendNotification(buildTitle(), message, type);
+	if (runeLiteConfig.enableTrayNotifications())
+	{
+		sendNotification(buildTitle(), message, type);
+	}
 
         switch (runeLiteConfig.notificationSound())
         {
