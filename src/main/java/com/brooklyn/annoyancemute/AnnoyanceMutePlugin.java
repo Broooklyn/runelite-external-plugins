@@ -140,6 +140,9 @@ public class AnnoyanceMutePlugin extends Plugin
 			case SoundEffectID.ZOMBIE_THRALL_ATTACK:
 				return config.muteThralls();
 
+			case SoundEffectID.TOB_VERZIK_VAMPIRE_MAGIC_ATTACK:
+				return config.muteVerzikP2MageAttack();
+
 			// ------- NPCs -------
 
 			case SoundEffectID.CAVE_HORROR:
