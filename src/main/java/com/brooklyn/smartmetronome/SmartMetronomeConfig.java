@@ -517,6 +517,17 @@ public interface SmartMetronomeConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+		keyName = "tombsMetronome",
+		name = "Tombs of Amascut",
+		description = ENABLES + "in the Tombs of Amascut",
+		section = raidsSection
+	)
+	default boolean tombsMetronome()
+	{
+	return true;
+	}
+
 	// Slayer
 
 	@ConfigItem(
