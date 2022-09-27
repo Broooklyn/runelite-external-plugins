@@ -312,6 +312,10 @@ public class SmartMetronomePlugin extends Plugin
 		15263, 15262
 	);
 
+	private static final Set<Integer> TOMBS_OF_AMASCUT_REGIONS = ImmutableSet.of(
+		14160, 14162, 14164, 14672, 14674, 14676, 15186, 15188, 15698, 15700, 15184, 15696
+	);
+
 	// Slayer
 
 	private static final Set<Integer> SLAYER_TOWER_REGIONS = ImmutableSet.of(
@@ -620,6 +624,11 @@ public class SmartMetronomePlugin extends Plugin
 			}
 
 			else if (config.volcanicMineMetronome() && VOLCANIC_MINE_REGIONS.contains(mapregion))
+			{
+				return true;
+			}
+
+			else if (config.tombsMetronome() && TOMBS_OF_AMASCUT_REGIONS.contains(mapregion))
 			{
 				return true;
 			}
