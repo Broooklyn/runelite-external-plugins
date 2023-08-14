@@ -909,6 +909,14 @@ public interface AnnoyanceMuteConfig extends Config
 		return "";
 	}
 
-
-
+	@ConfigItem(
+			keyName = "muteVerzikP2MageAttack",
+			name = "Verzik P2 Mage Attack",
+			description = "Mutes the sounds of Verzik P2 Mage Attack",
+			section = combatSection
+	)
+	default boolean muteVerzikP2MageAttack()
+	{
+		return false;
+	}
 }

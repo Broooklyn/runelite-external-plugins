@@ -240,4 +240,7 @@ public final class SoundEffectID
 	protected static final int CHARGE_AIR_ORB = 116;
 	protected static final int CHARGE_FIRE_ORB = 117;
 	protected static final int CHARGE_WATER_ORB = 118;
+
+	// TOB
+	protected static final int TOB_VERZIK_VAMPIRE_MAGIC_ATTACK = 3987;
 }
