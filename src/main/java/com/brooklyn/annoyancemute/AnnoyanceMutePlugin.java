@@ -82,7 +82,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 		else if (source == null)
 		{
-			if (soundId == SoundEffectID.PET_WALKING_THUMP && client.getVar(Varbits.IN_RAID) == 1)
+			if (soundId == SoundEffectID.PET_WALKING_THUMP && client.getVarbitValue(Varbits.IN_RAID) == 1)
 			{
 				return;
 			}
