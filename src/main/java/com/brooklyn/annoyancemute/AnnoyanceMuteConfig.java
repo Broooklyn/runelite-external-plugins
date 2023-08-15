@@ -432,6 +432,17 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "muteSmashing!",
+		name = "Smashing!",
+		description = "Mutes the sound of the Dragon Pickaxe special",
+		section = skillingSection
+	)
+	default boolean muteSmashing()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "muteWoodcutting",
 		name = "Woodcutting",
 		description = "Mutes the sound of Woodcutting",
