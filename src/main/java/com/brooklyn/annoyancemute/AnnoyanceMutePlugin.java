@@ -235,6 +235,9 @@ public class AnnoyanceMutePlugin extends Plugin
 			case SoundEffectID.CHOP_CHOP:
 				return config.muteChopChop();
 
+			case SoundEffectID.SMASHING:
+				return config.muteSmashing();
+
 			case SoundEffectID.CHISEL:
 				return config.muteDenseEssence();
 

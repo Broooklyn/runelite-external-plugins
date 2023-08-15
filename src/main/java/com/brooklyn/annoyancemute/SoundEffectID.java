@@ -97,6 +97,9 @@ public final class SoundEffectID
 	// Chop Chop
 	protected final static int CHOP_CHOP = 2531;
 
+	// Smashing!
+	protected final static int SMASHING = 2655;
+
 	// Plank Make
 	protected final static int PLANK_MAKE = 3617;
 
