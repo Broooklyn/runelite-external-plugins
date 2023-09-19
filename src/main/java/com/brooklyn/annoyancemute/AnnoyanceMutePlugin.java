@@ -433,9 +433,34 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			soundEffects.add(new SoundEffect(SoundEffectID.TELEOTHER, SoundEffectType.Either));
 		}
-		if (config.muteTeleport() || (config.muteTeleportOthers() && !localTeleport()))
+		if (config.muteTeleport())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either));
+			if (config.muteTeleportOthers())
+			{
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 714)); // Normal
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 1816)); // Lunar
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3864)); // Scroll
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3865)); // Xeric
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3867)); // Wilderness
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3869)); // Cabbage
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3872)); // Ardougne
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3874)); // Burgh
+			}
+			else
+			{
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either));
+			}
+		}
+		else if (config.muteTeleportOthers())
+		{
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 714)); // Normal
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 1816)); // Lunar
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3864)); // Scroll
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3865)); // Xeric
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3867)); // Wilderness
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3869)); // Cabbage
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3872)); // Ardougne
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3874)); // Burgh
 		}
 		if (config.muteRubberChickenSounds())
 		{
@@ -496,35 +521,13 @@ public class AnnoyanceMutePlugin extends Plugin
 
 	private boolean shouldMute(int soundId, SoundEffectType type)
 	{
-		SoundEffect soundEffect = new SoundEffect(soundId, type);
+		SoundEffect soundEffect = new SoundEffect(soundId, type, client.getLocalPlayer().getAnimation());
 		if (getSelectedSounds().contains(Integer.toString(soundId)))
 		{
 			return true;
 		}
 
 		return soundEffects.stream().anyMatch(s -> s.equals(soundEffect));
-	}
-
-	private boolean localTeleport()
-	{
-		Player localPlayer = client.getLocalPlayer();
-		int animID = localPlayer.getAnimation();
-
-		switch (animID)
-		{
-			case 714:	// Normal
-			case 1816:	// Lunar
-			case 3864:	// Scroll
-			case 3865:	// Xeric
-			case 3867:	// Wilderness
-			case 3869:	// Cabbage
-			case 3872:	// Ardougne
-			case 3874:	// Burgh
-				return true;
-
-			default:
-				return false;
-		}
 	}
 
 	List<String> getSelectedSounds()
