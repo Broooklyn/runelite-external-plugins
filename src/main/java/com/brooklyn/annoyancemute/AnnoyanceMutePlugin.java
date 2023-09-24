@@ -99,6 +99,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		if (config.muteCannon())
 		{
 			soundEffects.add(new SoundEffect(SoundEffectID.CANNON_SPIN, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.SHATTERED_CANNON_SPIN, SoundEffectType.Either));
 
 		}
 		if (config.muteIceSpells())

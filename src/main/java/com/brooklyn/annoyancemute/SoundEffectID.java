@@ -59,6 +59,7 @@ public final class SoundEffectID
 
 	// Cannon
 	protected final static int CANNON_SPIN = 2877;
+	protected final static int SHATTERED_CANNON_SPIN = 2174;
 
 	// ACB
 	protected final static int ACB_REEEE = 3892;
