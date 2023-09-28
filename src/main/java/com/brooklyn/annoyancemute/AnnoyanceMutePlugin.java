@@ -25,9 +25,11 @@
 package com.brooklyn.annoyancemute;
 
 import com.google.inject.Provides;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import net.runelite.api.Actor;
 import net.runelite.api.Client;
@@ -528,7 +530,19 @@ public class AnnoyanceMutePlugin extends Plugin
 			return true;
 		}
 
-		return soundEffects.stream().anyMatch(s -> s.equals(soundEffect));
+		List<SoundEffect> filteredSoundEffects = soundEffects.stream().filter(
+			s -> s.id == soundEffect.id
+			&& (s.type == SoundEffectType.Either || s.type == soundEffect.type)
+		).collect(Collectors.toCollection(ArrayList::new));
+		
+		if (filteredSoundEffects.size() == 0)
+		{
+			return false;
+		}
+		else
+		{
+			return filteredSoundEffects.stream().anyMatch(s -> s.animID == -1) || filteredSoundEffects.stream().noneMatch(s -> s.animID == soundEffect.animID);
+		}
 	}
 
 	List<String> getSelectedSounds()
