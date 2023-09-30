@@ -11,24 +11,42 @@ repositories {
 }
 
 def runeLiteVersion = 'latest.release'
+def junitVersion = "4.12"
 
 dependencies {
 	compileOnly group: 'net.runelite', name:'client', version: runeLiteVersion
+    implementation 'org.projectlombok:lombok:1.18.18'
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
-	compileOnly 'org.projectlombok:lombok:1.18.4'
-	annotationProcessor 'org.projectlombok:lombok:1.18.4'
+    testCompileOnly 'org.projectlombok:lombok:1.18.20'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
 
-	testImplementation 'junit:junit:4.12'
-	testImplementation 'org.slf4j:slf4j-simple:1.7.12'
-	testImplementation group: 'net.runelite', name:'client', version: runeLiteVersion, {
-		exclude group: 'ch.qos.logback', module: 'logback-classic'
-	}
+    compileOnly "org.jetbrains:annotations:23.0.0"
+
+    testImplementation 'org.slf4j:slf4j-simple:1.7.12'
+    testImplementation group: 'net.runelite', name:'client', version: runeLiteVersion, {
+        exclude group: 'ch.qos.logback', module: 'logback-classic'
+    }
+
+    testImplementation group: "junit", name: "junit", version: junitVersion
+
+    // mocking and test injection used by runelite client
+    testImplementation group: "org.mockito", name: "mockito-core", version: "3.1.0" // runelite uses 3.1.0
+    testImplementation group: "com.google.inject.extensions", name: "guice-testlib", version: "4.1.0", {
+        exclude group: "com.google.inject", module: "guice" // already provided by runelite client
+    }
 }
 
 group = 'com.brooklyn'
 version = '1.8.8'
-sourceCompatibility = '1.8'
 
 tasks.withType(JavaCompile) {
-	options.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+    options.release.set(11)
+}
+
+tasks.withType(Test) {
+    systemProperty 'logback.configurationFile', 'logback-test.xml'
+    systemProperty 'logback.debug', 'true'
 }
