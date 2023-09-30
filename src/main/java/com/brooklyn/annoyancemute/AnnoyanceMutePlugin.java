@@ -24,6 +24,7 @@
  */
 package com.brooklyn.annoyancemute;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Provides;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +38,6 @@ import net.runelite.api.Player;
 import net.runelite.api.Varbits;
 import net.runelite.api.events.AreaSoundEffectPlayed;
 import net.runelite.api.events.SoundEffectPlayed;
-import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
@@ -56,12 +56,10 @@ public class AnnoyanceMutePlugin extends Plugin
 	private Client client;
 
 	@Inject
-	private ClientThread clientThread;
-
-	@Inject
 	private AnnoyanceMuteConfig config;
 
-	HashSet<SoundEffect> soundEffects = new HashSet<>();
+	@VisibleForTesting
+	public HashSet<SoundEffect> soundEffects = new HashSet<>();
 
 	@Provides
 	AnnoyanceMuteConfig provideConfig(ConfigManager configManager)
@@ -522,7 +520,8 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 	}
 
-	private boolean shouldMute(int soundId, SoundEffectType type)
+	@VisibleForTesting
+	boolean shouldMute(int soundId, SoundEffectType type)
 	{
 		SoundEffect soundEffect = new SoundEffect(soundId, type, client.getLocalPlayer().getAnimation());
 		if (getSelectedSounds().contains(Integer.toString(soundId)))
@@ -534,7 +533,7 @@ public class AnnoyanceMutePlugin extends Plugin
 			s -> s.id == soundEffect.id
 			&& (s.type == SoundEffectType.Either || s.type == soundEffect.type)
 		).collect(Collectors.toCollection(ArrayList::new));
-		
+
 		if (filteredSoundEffects.size() == 0)
 		{
 			return false;
@@ -545,7 +544,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 	}
 
-	List<String> getSelectedSounds()
+	public List<String> getSelectedSounds()
 	{
 		final String configSounds = config.soundsToMute().toLowerCase();
 
