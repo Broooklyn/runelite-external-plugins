@@ -29,15 +29,22 @@ import com.google.inject.Provides;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import net.runelite.api.Actor;
+import net.runelite.api.AmbientSoundEffect;
 import net.runelite.api.Client;
+import net.runelite.api.Deque;
+import net.runelite.api.GameState;
 import net.runelite.api.Player;
 import net.runelite.api.Varbits;
 import net.runelite.api.events.AreaSoundEffectPlayed;
+import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.events.SoundEffectPlayed;
+import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
@@ -54,6 +61,9 @@ public class AnnoyanceMutePlugin extends Plugin
 {
 	@Inject
 	private Client client;
+
+	@Inject
+	private ClientThread clientThread;
 
 	@Inject
 	private AnnoyanceMuteConfig config;
@@ -85,6 +95,63 @@ public class AnnoyanceMutePlugin extends Plugin
 		if (configChanged.getGroup().equals("annoyancemute"))
 		{
 			setUpMutes();
+
+			if (configChanged.getKey().equals("muteMagicTrees"))
+			{
+				clientThread.invoke(() ->
+				{
+					// Reload the scene to reapply ambient sounds
+					if (client.getGameState() == GameState.LOGGED_IN)
+					{
+						client.setGameState(GameState.LOADING);
+					}
+				});
+			}
+		}
+	}
+
+	@Subscribe(priority = -2) // priority -2 to run after music plugin
+	public void onGameStateChanged(GameStateChanged gameStateChanged)
+	{
+		GameState gameState = gameStateChanged.getGameState();
+
+		if (gameState == GameState.LOGGED_IN && config.muteMagicTrees())
+		{
+			ArrayList<AmbientSoundEffect> soundsToKeep = new ArrayList<>();
+
+			HashSet<Integer> soundsToMute = new HashSet<>();
+
+			// set up ambient sounds to mute
+			if (config.muteMagicTrees())
+			{
+				soundsToMute.add(SoundEffectID.MAGIC_TREE);
+			}
+
+			// if nothing to mute then return
+			if (soundsToMute.size() == 0)
+			{
+				return;
+			}
+
+			Deque<AmbientSoundEffect> ambientSoundEffects = client.getAmbientSoundEffects();
+			Iterator<AmbientSoundEffect> itr = ambientSoundEffects.iterator();
+
+			while(itr.hasNext())
+			{
+				AmbientSoundEffect ambientSoundEffect = itr.next();
+
+				if (!soundsToMute.contains(ambientSoundEffect.getSoundEffectId()))
+				{
+					soundsToKeep.add(ambientSoundEffect);
+				}
+			}
+
+			client.getAmbientSoundEffects().clear();
+
+			for (AmbientSoundEffect ambientSoundEffect: soundsToKeep)
+			{
+				client.getAmbientSoundEffects().addLast(ambientSoundEffect);
+			}
 		}
 	}
 

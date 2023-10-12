@@ -289,6 +289,17 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "muteMagicTrees",
+		name = "Magic Trees",
+		description = "Mutes the sound of Magic Trees",
+		section = miscSection
+	)
+	default boolean muteMagicTrees()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "muteRandoms",
 		name = "Random Events",
 		description = "Mutes the sounds produced by random events",
