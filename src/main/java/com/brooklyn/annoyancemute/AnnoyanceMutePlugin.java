@@ -544,6 +544,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		if (config.muteMagicTrees())
 		{
 			ambientSoundsToMute.add(SoundEffectID.MAGIC_TREE);
+			ambientSoundsToMute.add(SoundEffectID.MAGIC_TREE_STATIC);
 		}
 	}
 
