@@ -15,7 +15,6 @@ def junitVersion = "4.12"
 
 dependencies {
 	compileOnly group: 'net.runelite', name:'client', version: runeLiteVersion
-    implementation 'org.projectlombok:lombok:1.18.18'
     compileOnly 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
