@@ -42,7 +42,6 @@ import net.runelite.api.Player;
 import net.runelite.api.Varbits;
 import net.runelite.api.events.AreaSoundEffectPlayed;
 import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.GameTick;
 import net.runelite.api.events.SoundEffectPlayed;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
@@ -71,6 +70,8 @@ public class AnnoyanceMutePlugin extends Plugin
 	@VisibleForTesting
 	public HashSet<SoundEffect> soundEffects = new HashSet<>();
 
+	private HashSet<Integer> ambientSoundsToMute = new HashSet<>();
+
 	@Provides
 	AnnoyanceMuteConfig provideConfig(ConfigManager configManager)
 	{
@@ -87,6 +88,15 @@ public class AnnoyanceMutePlugin extends Plugin
 	public void shutDown()
 	{
 		soundEffects.clear();
+
+		clientThread.invoke(() ->
+		{
+			// Reload the scene to reapply ambient sounds
+			if (client.getGameState() == GameState.LOGGED_IN)
+			{
+				client.setGameState(GameState.LOADING);
+			}
+		});
 	}
 
 	@Subscribe
@@ -117,37 +127,27 @@ public class AnnoyanceMutePlugin extends Plugin
 
 		if (gameState == GameState.LOGGED_IN && config.muteMagicTrees())
 		{
-			ArrayList<AmbientSoundEffect> soundsToKeep = new ArrayList<>();
-
-			HashSet<Integer> soundsToMute = new HashSet<>();
-
-			// set up ambient sounds to mute
-			if (config.muteMagicTrees())
-			{
-				soundsToMute.add(SoundEffectID.MAGIC_TREE);
-			}
-
 			// if nothing to mute then return
-			if (soundsToMute.size() == 0)
+			if (ambientSoundsToMute.size() == 0)
 			{
 				return;
 			}
 
 			Deque<AmbientSoundEffect> ambientSoundEffects = client.getAmbientSoundEffects();
-			Iterator<AmbientSoundEffect> itr = ambientSoundEffects.iterator();
+			ArrayList<AmbientSoundEffect> soundsToKeep = new ArrayList<>();
 
-			while(itr.hasNext())
+			for (AmbientSoundEffect ambientSoundEffect : ambientSoundEffects)
 			{
-				AmbientSoundEffect ambientSoundEffect = itr.next();
-
-				if (!soundsToMute.contains(ambientSoundEffect.getSoundEffectId()))
+				if (!ambientSoundsToMute.contains(ambientSoundEffect.getSoundEffectId()))
 				{
 					soundsToKeep.add(ambientSoundEffect);
 				}
 			}
 
+			// clear the deque (mutes all sounds)
 			client.getAmbientSoundEffects().clear();
 
+			// add the sounds not black listed back in
 			for (AmbientSoundEffect ambientSoundEffect: soundsToKeep)
 			{
 				client.getAmbientSoundEffects().addLast(ambientSoundEffect);
@@ -167,7 +167,6 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			soundEffects.add(new SoundEffect(SoundEffectID.CANNON_SPIN, SoundEffectType.Either));
 			soundEffects.add(new SoundEffect(SoundEffectID.SHATTERED_CANNON_SPIN, SoundEffectType.Either));
-
 		}
 		if (config.muteIceSpells())
 		{
@@ -537,6 +536,14 @@ public class AnnoyanceMutePlugin extends Plugin
 		if (config.muteObelisk())
 		{
 			soundEffects.add(new SoundEffect(SoundEffectID.WILDY_OBELISK, SoundEffectType.Either));
+		}
+
+		// Ambient Sounds
+		ambientSoundsToMute = new HashSet<>();
+
+		if (config.muteMagicTrees())
+		{
+			ambientSoundsToMute.add(SoundEffectID.MAGIC_TREE);
 		}
 	}
 
