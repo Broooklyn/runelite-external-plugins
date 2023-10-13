@@ -88,6 +88,15 @@ public class AnnoyanceMutePlugin extends Plugin
 	public void shutDown()
 	{
 		soundEffects.clear();
+
+		clientThread.invoke(() ->
+		{
+			// Reload the scene to reapply ambient sounds
+			if (client.getGameState() == GameState.LOGGED_IN)
+			{
+				client.setGameState(GameState.LOADING);
+			}
+		});
 	}
 
 	@Subscribe
