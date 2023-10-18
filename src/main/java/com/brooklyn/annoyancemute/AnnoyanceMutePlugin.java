@@ -72,6 +72,8 @@ public class AnnoyanceMutePlugin extends Plugin
 
 	private HashSet<Integer> ambientSoundsToMute = new HashSet<>();
 
+	String[] ambientConfigOptions = new String[]{"muteMagicTrees", "muteWhiteNoise"};
+
 	@Provides
 	AnnoyanceMuteConfig provideConfig(ConfigManager configManager)
 	{
@@ -106,16 +108,21 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			setUpMutes();
 
-			if (configChanged.getKey().equals("muteMagicTrees"))
+			for (String ambientConfigs: ambientConfigOptions)
 			{
-				clientThread.invoke(() ->
+				// if any of the config key match, run and return
+				if (ambientConfigs.equals(configChanged.getKey()))
 				{
-					// Reload the scene to reapply ambient sounds
-					if (client.getGameState() == GameState.LOGGED_IN)
+					clientThread.invoke(() ->
 					{
-						client.setGameState(GameState.LOADING);
-					}
-				});
+						// Reload the scene to reapply ambient sounds
+						if (client.getGameState() == GameState.LOGGED_IN)
+						{
+							client.setGameState(GameState.LOADING);
+						}
+					});
+					return;
+				}
 			}
 		}
 	}
@@ -125,10 +132,10 @@ public class AnnoyanceMutePlugin extends Plugin
 	{
 		GameState gameState = gameStateChanged.getGameState();
 
-		if (gameState == GameState.LOGGED_IN && config.muteMagicTrees())
+		if (gameState == GameState.LOGGED_IN)
 		{
 			// if nothing to mute then return
-			if (ambientSoundsToMute.size() == 0)
+			if (ambientSoundsToMute.isEmpty())
 			{
 				return;
 			}
@@ -544,7 +551,12 @@ public class AnnoyanceMutePlugin extends Plugin
 		if (config.muteMagicTrees())
 		{
 			ambientSoundsToMute.add(SoundEffectID.MAGIC_TREE);
-			ambientSoundsToMute.add(SoundEffectID.MAGIC_TREE_STATIC);
+		}
+
+		if (config.muteWhiteNoise())
+		{
+			ambientSoundsToMute.add(SoundEffectID.STATIC_1);
+			ambientSoundsToMute.add(SoundEffectID.STATIC_2);
 		}
 	}
 
