@@ -247,5 +247,8 @@ public final class SoundEffectID
 
 	// Magic Tree (Ambient Sound)
 	protected final static int MAGIC_TREE = 3134;
-	protected final static int MAGIC_TREE_STATIC = 2185;
+
+	// Ambient Static sounds
+	protected final static int STATIC_1 = 2184;
+	protected final static int STATIC_2 = 2185;
 }

@@ -300,6 +300,17 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
+			keyName = "muteWhiteNoise",
+			name = "Mute White Noise",
+			description = "Mutes the white noises/static filler sounds",
+			section = miscSection
+	)
+	default boolean muteWhiteNoise()
+	{
+		return true;
+	}
+	
+	@ConfigItem(
 		keyName = "muteRandoms",
 		name = "Random Events",
 		description = "Mutes the sounds produced by random events",
