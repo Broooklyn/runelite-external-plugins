@@ -72,7 +72,6 @@ public class AnnoyanceMutePlugin extends Plugin
 
 	private HashSet<Integer> ambientSoundsToMute = new HashSet<>();
 
-	String[] ambientConfigOptions = new String[]{"muteMagicTrees", "muteWhiteNoise"};
 
 	@Provides
 	AnnoyanceMuteConfig provideConfig(ConfigManager configManager)
@@ -108,11 +107,10 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			setUpMutes();
 
-			for (String ambientConfigs: ambientConfigOptions)
+			switch (configChanged.getKey())
 			{
-				// if any of the config key match, run and return
-				if (ambientConfigs.equals(configChanged.getKey()))
-				{
+				case "muteMagicTrees":
+				case "muteWhiteNoise":
 					clientThread.invoke(() ->
 					{
 						// Reload the scene to reapply ambient sounds
@@ -121,8 +119,6 @@ public class AnnoyanceMutePlugin extends Plugin
 							client.setGameState(GameState.LOADING);
 						}
 					});
-					return;
-				}
 			}
 		}
 	}
