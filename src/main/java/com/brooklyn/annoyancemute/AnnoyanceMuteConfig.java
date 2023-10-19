@@ -68,6 +68,13 @@ public interface AnnoyanceMuteConfig extends Config
 	)
 	String miscSection = "Miscellaneous";
 
+	@ConfigSection(
+			name = "Ambient",
+			description = "Ambient sounds to mute",
+			position = 5
+	)
+	String ambientSection = "Ambient";
+
 	@ConfigItem(
 		keyName = "mutePetSounds",
 		name = "Pets",
@@ -292,7 +299,7 @@ public interface AnnoyanceMuteConfig extends Config
 		keyName = "muteMagicTrees",
 		name = "Magic Trees",
 		description = "Mutes the sound of Magic Trees",
-		section = miscSection
+		section = ambientSection
 	)
 	default boolean muteMagicTrees()
 	{
@@ -303,7 +310,7 @@ public interface AnnoyanceMuteConfig extends Config
 			keyName = "muteWhiteNoise",
 			name = "Mute White Noise",
 			description = "Mutes the white noises/static filler sounds",
-			section = miscSection
+			section = ambientSection
 	)
 	default boolean muteWhiteNoise()
 	{
@@ -941,7 +948,4 @@ public interface AnnoyanceMuteConfig extends Config
 	{
 		return "";
 	}
-
-
-
 }
