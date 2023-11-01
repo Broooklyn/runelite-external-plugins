@@ -316,6 +316,17 @@ public interface AnnoyanceMuteConfig extends Config
 	{
 		return true;
 	}
+
+	@ConfigItem(
+		keyName = "muteChirps",
+		name = "Mute Chirps",
+		description = "Mutes the chirping sounds",
+		section = ambientSection
+	)
+	default boolean muteChirps()
+	{
+		return true;
+	}
 	
 	@ConfigItem(
 		keyName = "muteRandoms",

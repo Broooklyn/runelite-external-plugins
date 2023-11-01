@@ -29,7 +29,6 @@ import com.google.inject.Provides;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -111,6 +110,7 @@ public class AnnoyanceMutePlugin extends Plugin
 			{
 				case "muteMagicTrees":
 				case "muteWhiteNoise":
+				case "muteChirps":
 					clientThread.invoke(() ->
 					{
 						// Reload the scene to reapply ambient sounds
@@ -553,6 +553,17 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			ambientSoundsToMute.add(SoundEffectID.STATIC_1);
 			ambientSoundsToMute.add(SoundEffectID.STATIC_2);
+			ambientSoundsToMute.add(SoundEffectID.STATIC_3);
+		}
+
+		if (config.muteChirps())
+		{
+			ambientSoundsToMute.add(SoundEffectID.CRICKET_1);
+			ambientSoundsToMute.add(SoundEffectID.CRICKET_2);
+			ambientSoundsToMute.add(SoundEffectID.CRICKET_3);
+			ambientSoundsToMute.add(SoundEffectID.CRICKET_4);
+			ambientSoundsToMute.add(SoundEffectID.CRICKET_5);
+			ambientSoundsToMute.add(SoundEffectID.CRICKET_6);
 		}
 	}
 
