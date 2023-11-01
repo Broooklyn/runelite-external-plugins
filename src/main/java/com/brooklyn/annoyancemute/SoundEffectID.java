@@ -251,4 +251,13 @@ public final class SoundEffectID
 	// Ambient Static sounds
 	protected final static int STATIC_1 = 2184;
 	protected final static int STATIC_2 = 2185;
+	protected final static int STATIC_3 = 2083;
+
+	// Ambient Crickets
+	protected final static int CRICKET_1 = 1990;
+	protected final static int CRICKET_2 = 1991;
+	protected final static int CRICKET_3 = 1992;
+	protected final static int CRICKET_4 = 1993;
+	protected final static int CRICKET_5 = 1994;
+	protected final static int CRICKET_6 = 1995;
 }
