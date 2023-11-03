@@ -26,12 +26,15 @@ package com.brooklyn.annoyancemute;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Provides;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+import lombok.AccessLevel;
+import lombok.Getter;
 import net.runelite.api.Actor;
 import net.runelite.api.AmbientSoundEffect;
 import net.runelite.api.Client;
@@ -39,6 +42,7 @@ import net.runelite.api.Deque;
 import net.runelite.api.GameState;
 import net.runelite.api.Player;
 import net.runelite.api.Varbits;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AreaSoundEffectPlayed;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.SoundEffectPlayed;
@@ -48,6 +52,7 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.Text;
 
 @PluginDescriptor(
@@ -66,10 +71,21 @@ public class AnnoyanceMutePlugin extends Plugin
 	@Inject
 	private AnnoyanceMuteConfig config;
 
+	@Inject
+	private ConfigManager configManager;
+
+	@Inject
+	private OverlayManager overlayManager;
+
+	@Inject
+	private AnnoyanceMuteOverlay overlay;
+
 	@VisibleForTesting
 	public HashSet<SoundEffect> soundEffects = new HashSet<>();
 
 	private HashSet<Integer> ambientSoundsToMute = new HashSet<>();
+	@Getter(AccessLevel.PACKAGE)
+	private final List<ColorTileMarker> points = new ArrayList<>();
 
 	@Provides
 	AnnoyanceMuteConfig provideConfig(ConfigManager configManager)
@@ -80,12 +96,15 @@ public class AnnoyanceMutePlugin extends Plugin
 	@Override
 	public void startUp()
 	{
+		overlayManager.add(overlay);
 		setUpMutes();
 	}
 
 	@Override
 	public void shutDown()
 	{
+		overlayManager.remove(overlay);
+
 		soundEffects.clear();
 
 		clientThread.invoke(() ->
@@ -156,7 +175,31 @@ public class AnnoyanceMutePlugin extends Plugin
 			{
 				client.getAmbientSoundEffects().addLast(ambientSoundEffect);
 			}
+
+			points.clear();
+			for (AmbientSoundEffect ambientSoundEffect : client.getAmbientSoundEffects())
+			{
+				markTile(ambientSoundEffect);
+			}
 		}
+	}
+
+	private void markTile(AmbientSoundEffect ambientSoundEffect)
+	{
+		if (ambientSoundEffect == null)
+		{
+			return;
+		}
+
+		WorldPoint worldPointMin = WorldPoint.fromLocalInstance(client, ambientSoundEffect.getMinPosition());
+		WorldPoint worldPointMax = WorldPoint.fromLocalInstance(client, ambientSoundEffect.getMaxPosition());
+
+		ColorTileMarker pointMin = new ColorTileMarker(worldPointMin, Color.RED, String.valueOf(ambientSoundEffect.getSoundEffectId()) + " min");
+		ColorTileMarker pointMax = new ColorTileMarker(worldPointMax, Color.RED, String.valueOf(ambientSoundEffect.getSoundEffectId()) + " max");
+
+		points.add(pointMin);
+		points.add(pointMax);
+
 	}
 
 	private void setUpMutes()
