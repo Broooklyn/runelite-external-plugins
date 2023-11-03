@@ -72,9 +72,6 @@ public class AnnoyanceMutePlugin extends Plugin
 	private AnnoyanceMuteConfig config;
 
 	@Inject
-	private ConfigManager configManager;
-
-	@Inject
 	private OverlayManager overlayManager;
 
 	@Inject
