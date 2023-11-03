@@ -252,6 +252,8 @@ public final class SoundEffectID
 	protected final static int STATIC_1 = 2184;
 	protected final static int STATIC_2 = 2185;
 	protected final static int STATIC_3 = 2083;
+	protected final static int STATIC_4 = 2066;
+	protected final static int STATIC_5 = 2169;
 
 	// Ambient Crickets
 	protected final static int CRICKET_1 = 1990;
@@ -260,4 +262,11 @@ public final class SoundEffectID
 	protected final static int CRICKET_4 = 1993;
 	protected final static int CRICKET_5 = 1994;
 	protected final static int CRICKET_6 = 1995;
+
+	// Water
+	protected final static int WATER_1 = 2158;
+	protected final static int WATER_2 = 3094;
+	protected final static int WATER_3 = 2223; // water 3 is a bubble noise but also white noise
+	protected final static int WATER_4 = 2168; // water 4 is waves crashing into shore but also white noise
+	protected final static int WATER_5 = 3083;
 }

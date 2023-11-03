@@ -39,6 +39,7 @@ import net.runelite.api.Deque;
 import net.runelite.api.GameState;
 import net.runelite.api.Player;
 import net.runelite.api.Varbits;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AreaSoundEffectPlayed;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.SoundEffectPlayed;
@@ -111,6 +112,7 @@ public class AnnoyanceMutePlugin extends Plugin
 				case "muteMagicTrees":
 				case "muteWhiteNoise":
 				case "muteChirps":
+				case "muteWater":
 					clientThread.invoke(() ->
 					{
 						// Reload the scene to reapply ambient sounds
@@ -554,6 +556,8 @@ public class AnnoyanceMutePlugin extends Plugin
 			ambientSoundsToMute.add(SoundEffectID.STATIC_1);
 			ambientSoundsToMute.add(SoundEffectID.STATIC_2);
 			ambientSoundsToMute.add(SoundEffectID.STATIC_3);
+			ambientSoundsToMute.add(SoundEffectID.STATIC_4);
+			ambientSoundsToMute.add(SoundEffectID.STATIC_5);
 		}
 
 		if (config.muteChirps())
@@ -564,6 +568,15 @@ public class AnnoyanceMutePlugin extends Plugin
 			ambientSoundsToMute.add(SoundEffectID.CRICKET_4);
 			ambientSoundsToMute.add(SoundEffectID.CRICKET_5);
 			ambientSoundsToMute.add(SoundEffectID.CRICKET_6);
+		}
+
+		if (config.muteWater())
+		{
+			ambientSoundsToMute.add(SoundEffectID.WATER_1);
+			ambientSoundsToMute.add(SoundEffectID.WATER_2);
+			ambientSoundsToMute.add(SoundEffectID.WATER_3);
+			ambientSoundsToMute.add(SoundEffectID.WATER_4);
+			ambientSoundsToMute.add(SoundEffectID.WATER_5);
 		}
 	}
 

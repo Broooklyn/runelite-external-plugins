@@ -327,7 +327,19 @@ public interface AnnoyanceMuteConfig extends Config
 	{
 		return true;
 	}
-	
+
+	@ConfigItem(
+		keyName = "muteWater",
+		name = "Mute Water",
+		description = "Mutes the sound of water at shores",
+		section = ambientSection
+	)
+	default boolean muteWater()
+	{
+		return true;
+	}
+
+
 	@ConfigItem(
 		keyName = "muteRandoms",
 		name = "Random Events",
