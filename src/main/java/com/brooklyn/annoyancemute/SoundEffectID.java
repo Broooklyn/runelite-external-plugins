@@ -252,7 +252,7 @@ public final class SoundEffectID
 	protected final static int STATIC_1 = 2184;
 	protected final static int STATIC_2 = 2185;
 	protected final static int STATIC_3 = 2083;
-	protected final static int STATIC_4 = 2066;
+	protected final static int STATIC_4 = 2066; // TODO CONFIRM THIS
 	protected final static int STATIC_5 = 2169;
 
 	// Ambient Crickets
@@ -269,4 +269,13 @@ public final class SoundEffectID
 	protected final static int WATER_3 = 2223; // water 3 is a bubble noise but also white noise
 	protected final static int WATER_4 = 2168; // water 4 is waves crashing into shore but also white noise
 	protected final static int WATER_5 = 3083;
+	protected final static int WATER_6 = 2149; // varrock armor shop fountain
+	protected final static int WATER_7 = 2151; // varrock center fountains
+	protected final static int WATER_8 = 2150; // lumbridge fountains
+	protected final static int WATER_9 = 2147; // barbarian village bridge
+	protected final static int WATER_10 = 2170; // barbarian village bridge
+
+	// Ranges
+	protected final static int RANGE_1 = 2199;
+
 }

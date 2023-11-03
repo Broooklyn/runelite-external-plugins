@@ -339,6 +339,17 @@ public interface AnnoyanceMuteConfig extends Config
 		return true;
 	}
 
+	@ConfigItem(
+		keyName = "muteRanges",
+		name = "Mute Ranges",
+		description = "Mutes the sound of cooking ranges",
+		section = ambientSection
+	)
+	default boolean muteRanges()
+	{
+		return true;
+	}
+
 
 	@ConfigItem(
 		keyName = "muteRandoms",

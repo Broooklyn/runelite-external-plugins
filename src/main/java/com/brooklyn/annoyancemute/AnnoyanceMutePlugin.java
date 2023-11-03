@@ -39,7 +39,6 @@ import net.runelite.api.Deque;
 import net.runelite.api.GameState;
 import net.runelite.api.Player;
 import net.runelite.api.Varbits;
-import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AreaSoundEffectPlayed;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.SoundEffectPlayed;
@@ -71,7 +70,6 @@ public class AnnoyanceMutePlugin extends Plugin
 	public HashSet<SoundEffect> soundEffects = new HashSet<>();
 
 	private HashSet<Integer> ambientSoundsToMute = new HashSet<>();
-
 
 	@Provides
 	AnnoyanceMuteConfig provideConfig(ConfigManager configManager)
@@ -113,6 +111,7 @@ public class AnnoyanceMutePlugin extends Plugin
 				case "muteWhiteNoise":
 				case "muteChirps":
 				case "muteWater":
+				case "muteRanges":
 					clientThread.invoke(() ->
 					{
 						// Reload the scene to reapply ambient sounds
@@ -556,7 +555,9 @@ public class AnnoyanceMutePlugin extends Plugin
 			ambientSoundsToMute.add(SoundEffectID.STATIC_1);
 			ambientSoundsToMute.add(SoundEffectID.STATIC_2);
 			ambientSoundsToMute.add(SoundEffectID.STATIC_3);
-			ambientSoundsToMute.add(SoundEffectID.STATIC_4);
+
+			// TODO confirm STATIC_4 is water + static or just static
+//			ambientSoundsToMute.add(SoundEffectID.STATIC_4);
 			ambientSoundsToMute.add(SoundEffectID.STATIC_5);
 		}
 
@@ -577,6 +578,16 @@ public class AnnoyanceMutePlugin extends Plugin
 			ambientSoundsToMute.add(SoundEffectID.WATER_3);
 			ambientSoundsToMute.add(SoundEffectID.WATER_4);
 			ambientSoundsToMute.add(SoundEffectID.WATER_5);
+			ambientSoundsToMute.add(SoundEffectID.WATER_6);
+			ambientSoundsToMute.add(SoundEffectID.WATER_7);
+			ambientSoundsToMute.add(SoundEffectID.WATER_8);
+			ambientSoundsToMute.add(SoundEffectID.WATER_9);
+			ambientSoundsToMute.add(SoundEffectID.WATER_10);
+		}
+
+		if (config.muteRanges())
+		{
+			ambientSoundsToMute.add(SoundEffectID.RANGE_1);
 		}
 	}
 
