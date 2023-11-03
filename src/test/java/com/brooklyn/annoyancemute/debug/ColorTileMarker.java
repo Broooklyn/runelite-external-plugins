@@ -1,4 +1,4 @@
-package com.brooklyn.annoyancemute;
+package com.brooklyn.annoyancemute.debug;
 
 import java.awt.Color;
 import javax.annotation.Nullable;

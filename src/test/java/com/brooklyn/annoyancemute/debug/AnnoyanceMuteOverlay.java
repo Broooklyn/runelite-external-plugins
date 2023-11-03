@@ -1,4 +1,4 @@
-package com.brooklyn.annoyancemute;
+package com.brooklyn.annoyancemute.debug;
 
 import com.google.common.base.Strings;
 import java.awt.BasicStroke;
@@ -26,10 +26,10 @@ public class AnnoyanceMuteOverlay extends Overlay
 	private static final int MAX_DRAW_DISTANCE = 32;
 
 	private final Client client;
-	private final AnnoyanceMutePlugin plugin;
+	private final AnnoyanceMutePluginDebug plugin;
 
 	@Inject
-	private AnnoyanceMuteOverlay(Client client, AnnoyanceMutePlugin plugin)
+	private AnnoyanceMuteOverlay(Client client, AnnoyanceMutePluginDebug plugin)
 	{
 		this.client = client;
 		this.plugin = plugin;

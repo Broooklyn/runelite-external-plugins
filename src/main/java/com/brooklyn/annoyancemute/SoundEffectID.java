@@ -255,13 +255,14 @@ public final class SoundEffectID
 	protected final static int STATIC_4 = 2066; // TODO CONFIRM THIS
 	protected final static int STATIC_5 = 2169;
 
-	// Ambient Crickets
+	// Ambient Crickets/Birds
 	protected final static int CRICKET_1 = 1990;
 	protected final static int CRICKET_2 = 1991;
 	protected final static int CRICKET_3 = 1992;
 	protected final static int CRICKET_4 = 1993;
 	protected final static int CRICKET_5 = 1994;
 	protected final static int CRICKET_6 = 1995;
+	protected final static int BIRD_1 = 2184;
 
 	// Water
 	protected final static int WATER_1 = 2158;
@@ -277,5 +278,7 @@ public final class SoundEffectID
 
 	// Ranges
 	protected final static int RANGE_1 = 2199;
+	protected final static int RANGE_2 = 2065;
+	protected final static int COOKING_POT = 2200;
 
 }
