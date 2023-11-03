@@ -254,6 +254,7 @@ public final class SoundEffectID
 	protected final static int STATIC_3 = 2083;
 	protected final static int STATIC_4 = 2066; // TODO CONFIRM THIS
 	protected final static int STATIC_5 = 2169;
+	protected final static int STATIC_6 = 2088; // this is some noise in rimmington
 
 	// Ambient Crickets/Birds
 	protected final static int CRICKET_1 = 1990;
@@ -262,7 +263,7 @@ public final class SoundEffectID
 	protected final static int CRICKET_4 = 1993;
 	protected final static int CRICKET_5 = 1994;
 	protected final static int CRICKET_6 = 1995;
-	protected final static int BIRD_1 = 2184;
+	protected final static int BIRD_1 = 2184; // 2184 is both static and chirping, plays chirps when in wooded areas
 
 	// Water
 	protected final static int WATER_1 = 2158;
@@ -275,6 +276,10 @@ public final class SoundEffectID
 	protected final static int WATER_8 = 2150; // lumbridge fountains
 	protected final static int WATER_9 = 2147; // barbarian village bridge
 	protected final static int WATER_10 = 2170; // barbarian village bridge
+	protected final static int WATER_11 = 2184; // 2184 is both static and water, plays shore noises when at water some how
+	protected final static int WATER_12 = 3087;
+	protected final static int WATER_13 = 2041; // lumbridge swamp bubbles
+
 
 	// Ranges
 	protected final static int RANGE_1 = 2199;

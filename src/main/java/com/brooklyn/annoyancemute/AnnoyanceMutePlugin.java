@@ -560,6 +560,7 @@ public class AnnoyanceMutePlugin extends Plugin
 			// TODO confirm STATIC_4 is water + static or just static
 //			ambientSoundsToMute.add(SoundEffectID.STATIC_4);
 			ambientSoundsToMute.add(SoundEffectID.STATIC_5);
+//			ambientSoundsToMute.add(SoundEffectID.STATIC_6); // this is some noise in rimmington
 		}
 		if (config.muteChirps())
 		{
@@ -583,6 +584,9 @@ public class AnnoyanceMutePlugin extends Plugin
 			ambientSoundsToMute.add(SoundEffectID.WATER_8);
 			ambientSoundsToMute.add(SoundEffectID.WATER_9);
 			ambientSoundsToMute.add(SoundEffectID.WATER_10);
+			ambientSoundsToMute.add(SoundEffectID.WATER_11);
+			ambientSoundsToMute.add(SoundEffectID.WATER_12);
+			ambientSoundsToMute.add(SoundEffectID.WATER_13);
 		}
 		if (config.muteRanges())
 		{
