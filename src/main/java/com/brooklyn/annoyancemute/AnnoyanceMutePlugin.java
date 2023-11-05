@@ -557,8 +557,7 @@ public class AnnoyanceMutePlugin extends Plugin
 			ambientSoundsToMute.add(SoundEffectID.STATIC_1);
 			ambientSoundsToMute.add(SoundEffectID.STATIC_2);
 			ambientSoundsToMute.add(SoundEffectID.STATIC_3);
-			// TODO confirm STATIC_4 is water + static or just static
-//			ambientSoundsToMute.add(SoundEffectID.STATIC_4);
+//			ambientSoundsToMute.add(SoundEffectID.STATIC_4); // TODO confirm STATIC_4 is water + static or just static
 			ambientSoundsToMute.add(SoundEffectID.STATIC_5);
 //			ambientSoundsToMute.add(SoundEffectID.STATIC_6); // this is some noise in rimmington
 		}
