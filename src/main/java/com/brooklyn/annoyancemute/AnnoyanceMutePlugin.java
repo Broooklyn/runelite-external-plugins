@@ -27,7 +27,6 @@ package com.brooklyn.annoyancemute;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Provides;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -86,6 +85,15 @@ public class AnnoyanceMutePlugin extends Plugin
 	public void startUp()
 	{
 		setUpMutes();
+
+		clientThread.invoke(() ->
+		{
+			// Reload the scene to reapply ambient sounds
+			if (client.getGameState() == GameState.LOGGED_IN)
+			{
+				client.setGameState(GameState.LOADING);
+			}
+		});
 	}
 
 	@Override
@@ -129,58 +137,84 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 	}
 
+
+	@Subscribe
+	public void onAmbientSoundEffectCreated(AmbientSoundEffectCreated ambientSoundEffectCreated)
+	{
+		// if nothing to mute then return
+		if (ambientSoundsToMute.isEmpty())
+		{
+			return;
+		}
+
+		List<SoundEffect> mutedAmbientsSameID = ambientSoundsToMute.stream().filter(mutedSounds -> mutedSounds.id == ambientSoundEffectCreated.getAmbientSoundEffect().getSoundEffectId()).collect(Collectors.toList());
+
+		// only mute sounds created that should be muted should call the muteAmbientSounds()
+		if (mutedAmbientsSameID.size() > 0)
+		{
+			muteAmbientSounds();
+		}
+	}
+
 	@Subscribe(priority = -2) // priority -2 to run after music plugin
 	public void onGameStateChanged(GameStateChanged gameStateChanged)
 	{
+		// if nothing to mute then return
+		if (ambientSoundsToMute.isEmpty())
+		{
+			return;
+		}
+
 		GameState gameState = gameStateChanged.getGameState();
 
+		// on map load mute ambient sounds
 		if (gameState == GameState.LOGGED_IN)
 		{
-			// if nothing to mute then return
-			if (ambientSoundsToMute.isEmpty())
-			{
-				return;
-			}
+			muteAmbientSounds();
+		}
+	}
 
-			Deque<AmbientSoundEffect> ambientSoundEffects = client.getAmbientSoundEffects();
-			ArrayList<AmbientSoundEffect> soundsToKeep = new ArrayList<>();
+	// Check the ambient sounds currently being played and remove the ones that should be mtued
+	private void muteAmbientSounds()
+	{
+		Deque<AmbientSoundEffect> ambientSoundEffects = client.getAmbientSoundEffects();
+		ArrayList<AmbientSoundEffect> soundsToKeep = new ArrayList<>();
 
-			for (AmbientSoundEffect ambientSoundEffect : ambientSoundEffects)
+		for (AmbientSoundEffect ambientSoundEffect : ambientSoundEffects)
+		{
+			List<SoundEffect> mutedAmbientsSameID = ambientSoundsToMute.stream().filter(mutedSounds -> mutedSounds.id == ambientSoundEffect.getSoundEffectId()).collect(Collectors.toList());
+			boolean muteSound = false;
+			for (int i = 0; i < mutedAmbientsSameID.size() && !muteSound; i++)
 			{
-				List<SoundEffect> mutedAmbientsSameID = ambientSoundsToMute.stream().filter(mutedSounds -> mutedSounds.id == ambientSoundEffect.getSoundEffectId()).collect(Collectors.toList());
-				boolean muteSound = false;
-				for (int i = 0; i < mutedAmbientsSameID.size() && !muteSound; i++)
+				int[] backgroundSounds = ambientSoundEffect.getBackgroundSoundEffectIds();
+				int[] backgroundSoundsToMute = mutedAmbientsSameID.get(i).backGroundSoundEffect;
+
+				if (backgroundSounds == null && backgroundSoundsToMute.length == 0)
 				{
-					int[] backgroundSounds = ambientSoundEffect.getBackgroundSoundEffectIds();
-					int[] backgroundSoundsToMute = mutedAmbientsSameID.get(i).backGroundSoundEffect;
-
-					if (backgroundSounds == null && backgroundSoundsToMute.length == 0)
-					{
-						muteSound = true;
-					}
-					if (backgroundSounds != null && backgroundSoundsToMute.length == 0)
-					{
-						muteSound = true;
-					}
-					if (backgroundSounds != null && backgroundSoundsToMute.length != 0 && arraysLikeEnough(backgroundSounds, backgroundSoundsToMute))
-					{
-						muteSound = true;
-					}
+					muteSound = true;
 				}
-				if (!muteSound)
+				if (backgroundSounds != null && backgroundSoundsToMute.length == 0)
 				{
-					soundsToKeep.add(ambientSoundEffect);
+					muteSound = true;
+				}
+				if (backgroundSounds != null && backgroundSoundsToMute.length != 0 && arraysLikeEnough(backgroundSounds, backgroundSoundsToMute))
+				{
+					muteSound = true;
 				}
 			}
-
-			// clear the deque (mutes all sounds)
-			client.getAmbientSoundEffects().clear();
-
-			// add the sounds not black listed back in
-			for (AmbientSoundEffect ambientSoundEffect: soundsToKeep)
+			if (!muteSound)
 			{
-				client.getAmbientSoundEffects().addLast(ambientSoundEffect);
+				soundsToKeep.add(ambientSoundEffect);
 			}
+		}
+
+		// clear the deque (mutes all sounds)
+		client.getAmbientSoundEffects().clear();
+
+		// add the sounds not black listed back in
+		for (AmbientSoundEffect ambientSoundEffect : soundsToKeep)
+		{
+			client.getAmbientSoundEffects().addLast(ambientSoundEffect);
 		}
 	}
 
@@ -191,7 +225,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		int total = 0;
 		int totalSimilar = 0;
 
-		for (int int1: array1)
+		for (int int1 : array1)
 		{
 			total++;
 			for (int int2 : array2)
@@ -598,26 +632,33 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 		if (config.muteWhiteNoise())
 		{
-			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_STATIC_1_1));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_STATIC_1));
+
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_2, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_3, SoundEffectType.AMBIENT));
-			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_4, SoundEffectType.AMBIENT)); // TODO confirm STATIC_4 is water + static or just static
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_4, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_5, SoundEffectType.AMBIENT));
-			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_6, SoundEffectType.AMBIENT)); // this is some noise in rimmington
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_6, SoundEffectType.AMBIENT));
 		}
 		if (config.muteChirps())
 		{
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_BIRD_1));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_BIRD_2));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_BIRD_3));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_BIRD_4));
+
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.CRICKET_1, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.CRICKET_2, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.CRICKET_3, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.CRICKET_4, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.CRICKET_5, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.CRICKET_6, SoundEffectType.AMBIENT));
-			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.BIRD_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_BIRD_1_1));
-			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.BIRD_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_BIRD_1_2));
 		}
 		if (config.muteWater())
 		{
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_WATER_1));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_WATER_2));
+
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_1, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_2, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_3, SoundEffectType.AMBIENT));
@@ -628,9 +669,8 @@ public class AnnoyanceMutePlugin extends Plugin
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_8, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_9, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_10, SoundEffectType.AMBIENT));
-			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_11, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_WATER_1_1));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_11, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_12, SoundEffectType.AMBIENT));
-			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_13, SoundEffectType.AMBIENT));
 		}
 		if (config.muteRanges())
 		{
@@ -698,7 +738,7 @@ public class AnnoyanceMutePlugin extends Plugin
 
 		List<SoundEffect> filteredSoundEffects = soundEffects.stream().filter(
 			s -> s.id == soundEffect.id
-			&& (s.type == SoundEffectType.EITHER || s.type == soundEffect.type)
+				&& (s.type == SoundEffectType.EITHER || s.type == soundEffect.type)
 		).collect(Collectors.toCollection(ArrayList::new));
 
 		if (filteredSoundEffects.size() == 0)

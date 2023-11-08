@@ -249,8 +249,6 @@ public final class SoundEffectID
 	protected final static int MAGIC_TREE = 3134;
 
 	// Ambient Static sounds
-	protected final static int STATIC_1 = 2184;
-	protected final static int[] COMMON_BACKGROUND_2184_STATIC_1_1 = new int[] {2184, 2185, 2073, 2074, 2075};
 
 	protected final static int STATIC_2 = 2185;
 	protected final static int STATIC_3 = 2083;
@@ -265,13 +263,6 @@ public final class SoundEffectID
 	protected final static int CRICKET_4 = 1993;
 	protected final static int CRICKET_5 = 1994;
 	protected final static int CRICKET_6 = 1995;
-	protected final static int BIRD_1 = 2184;
-	protected final static int[] COMMON_BACKGROUND_2184_BIRD_1_1 = new int[]{1984, 1985, 1986, 1987, 1988};
-
-	protected final static int[] COMMON_BACKGROUND_2184_BIRD_1_2 = new int[]{2019, 2020, 2013, 2014, 2057, 2076, 2012};
-	protected final static int[] COMMON_BACKGROUND_2184_BIRD_1_3 = new int[]{2010, 2012, 2011, 2073}; // draynor village owls
-	protected final static int[] COMMON_BACKGROUND_2184_BIRD_1_4 = new int[]{2070, 2071, 2073, 2074, 2075, 2072, 2184}; // draynor village owls
-
 	// Water
 	protected final static int WATER_1 = 2158;
 	protected final static int WATER_2 = 3094;
@@ -283,15 +274,28 @@ public final class SoundEffectID
 	protected final static int WATER_8 = 2150; // lumbridge fountains
 	protected final static int WATER_9 = 2147; // barbarian village bridge
 	protected final static int WATER_10 = 2170; // barbarian village bridge
-	protected final static int WATER_11 = 2184;
-	protected final static int[] COMMON_BACKGROUND_2184_WATER_1_1 = new int[]{3083,3084,3085,3086};
-	protected final static int WATER_12 = 3087;
-	protected final static int WATER_13 = 2041; // lumbridge swamp bubbles
+	protected final static int WATER_11 = 3087;
+	protected final static int WATER_12 = 2041; // lumbridge swamp bubbles
 
 
 	// Ranges
 	protected final static int RANGE_1 = 2199;
 	protected final static int RANGE_2 = 2065;
 	protected final static int COOKING_POT = 2200;
+
+	// Ambient Static Air 2184 base + modifiers
+
+	protected final static int COMMON_BACKGROUND_1 = 2184;
+	protected final static int[] COMMON_BACKGROUND_2184_STATIC_1 = new int[]{2184, 2185, 2073, 2074, 2075};
+
+	protected final static int[] COMMON_BACKGROUND_2184_BIRD_1 = new int[]{1984, 1985, 1986, 1987, 1988};
+
+	protected final static int[] COMMON_BACKGROUND_2184_BIRD_2 = new int[]{2019, 2020, 2013, 2014, 2057, 2076, 2012};
+	protected final static int[] COMMON_BACKGROUND_2184_BIRD_3 = new int[]{2010, 2012, 2011, 2073}; // draynor village owls
+	protected final static int[] COMMON_BACKGROUND_2184_BIRD_4 = new int[]{2070, 2071, 2073, 2074, 2075, 2072, 2184}; // draynor village owls
+
+	protected final static int[] COMMON_BACKGROUND_2184_WATER_1 = new int[]{3083, 3084, 3085, 3086};
+	protected final static int[] COMMON_BACKGROUND_2184_WATER_2 = new int[]{2153, 2154, 2148, 2167};
+
 
 }

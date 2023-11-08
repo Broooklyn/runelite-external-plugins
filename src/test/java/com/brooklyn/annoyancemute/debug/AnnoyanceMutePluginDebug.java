@@ -13,6 +13,7 @@ import net.runelite.api.AmbientSoundEffect;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.events.AmbientSoundEffectCreated;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -60,7 +61,7 @@ public class AnnoyanceMutePluginDebug extends Plugin
 		overlayManager.remove(overlay);
 	}
 
-	@Subscribe(priority = -3) // priority -2 to run after music plugin
+	@Subscribe(priority = -3) // priority -3 to run after AnnoyanceMutePlugin
 	public void onGameStateChanged(GameStateChanged gameStateChanged)
 	{
 		GameState gameState = gameStateChanged.getGameState();
@@ -71,6 +72,15 @@ public class AnnoyanceMutePluginDebug extends Plugin
 			{
 				markTile(ambientSoundEffect);
 			}
+		}
+	}
+
+	@Subscribe(priority = -1) // priority -1 to run after AnnoyanceMutePlugin
+	public void onAmbientSoundEffectCreated(AmbientSoundEffectCreated ambientSoundEffectCreated)
+	{
+		for (AmbientSoundEffect ambientSoundEffect : client.getAmbientSoundEffects())
+		{
+			markTile(ambientSoundEffect);
 		}
 	}
 
@@ -90,8 +100,10 @@ public class AnnoyanceMutePluginDebug extends Plugin
 		if (b == null)
 		{
 			stringBuilder.append(",");
-		} else {
-			for (int i: b)
+		}
+		else
+		{
+			for (int i : b)
 			{
 				stringBuilder.append("," + i);
 			}
