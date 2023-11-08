@@ -32,6 +32,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
+import lombok.AccessLevel;
+import lombok.Getter;
 import net.runelite.api.Actor;
 import net.runelite.api.AmbientSoundEffect;
 import net.runelite.api.Client;
@@ -39,6 +41,7 @@ import net.runelite.api.Deque;
 import net.runelite.api.GameState;
 import net.runelite.api.Player;
 import net.runelite.api.Varbits;
+import net.runelite.api.events.AmbientSoundEffectCreated;
 import net.runelite.api.events.AreaSoundEffectPlayed;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.SoundEffectPlayed;
@@ -69,8 +72,8 @@ public class AnnoyanceMutePlugin extends Plugin
 	@VisibleForTesting
 	public HashSet<SoundEffect> soundEffects = new HashSet<>();
 
-	private HashSet<Integer> ambientSoundsToMute = new HashSet<>();
-
+	@Getter(AccessLevel.PUBLIC)
+	public HashSet<SoundEffect> ambientSoundsToMute = new HashSet<>();
 
 	@Provides
 	AnnoyanceMuteConfig provideConfig(ConfigManager configManager)
@@ -82,6 +85,15 @@ public class AnnoyanceMutePlugin extends Plugin
 	public void startUp()
 	{
 		setUpMutes();
+
+		clientThread.invoke(() ->
+		{
+			// Reload the scene to reapply ambient sounds
+			if (client.getGameState() == GameState.LOGGED_IN)
+			{
+				client.setGameState(GameState.LOADING);
+			}
+		});
 	}
 
 	@Override
@@ -111,6 +123,8 @@ public class AnnoyanceMutePlugin extends Plugin
 				case "muteMagicTrees":
 				case "muteWhiteNoise":
 				case "muteChirps":
+				case "muteWater":
+				case "muteRanges":
 					clientThread.invoke(() ->
 					{
 						// Reload the scene to reapply ambient sounds
@@ -123,39 +137,107 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 	}
 
+
+	@Subscribe
+	public void onAmbientSoundEffectCreated(AmbientSoundEffectCreated ambientSoundEffectCreated)
+	{
+		// if nothing to mute then return
+		if (ambientSoundsToMute.isEmpty())
+		{
+			return;
+		}
+
+		List<SoundEffect> mutedAmbientsSameID = ambientSoundsToMute.stream().filter(mutedSounds -> mutedSounds.id == ambientSoundEffectCreated.getAmbientSoundEffect().getSoundEffectId()).collect(Collectors.toList());
+
+		// only mute sounds created that should be muted should call the muteAmbientSounds()
+		if (mutedAmbientsSameID.size() > 0)
+		{
+			muteAmbientSounds();
+		}
+	}
+
 	@Subscribe(priority = -2) // priority -2 to run after music plugin
 	public void onGameStateChanged(GameStateChanged gameStateChanged)
 	{
+		// if nothing to mute then return
+		if (ambientSoundsToMute.isEmpty())
+		{
+			return;
+		}
+
 		GameState gameState = gameStateChanged.getGameState();
 
+		// on map load mute ambient sounds
 		if (gameState == GameState.LOGGED_IN)
 		{
-			// if nothing to mute then return
-			if (ambientSoundsToMute.isEmpty())
-			{
-				return;
-			}
+			muteAmbientSounds();
+		}
+	}
 
-			Deque<AmbientSoundEffect> ambientSoundEffects = client.getAmbientSoundEffects();
-			ArrayList<AmbientSoundEffect> soundsToKeep = new ArrayList<>();
+	// Check the ambient sounds currently being played and remove the ones that should be mtued
+	private void muteAmbientSounds()
+	{
+		Deque<AmbientSoundEffect> ambientSoundEffects = client.getAmbientSoundEffects();
+		ArrayList<AmbientSoundEffect> soundsToKeep = new ArrayList<>();
 
-			for (AmbientSoundEffect ambientSoundEffect : ambientSoundEffects)
+		for (AmbientSoundEffect ambientSoundEffect : ambientSoundEffects)
+		{
+			List<SoundEffect> mutedAmbientsSameID = ambientSoundsToMute.stream().filter(mutedSounds -> mutedSounds.id == ambientSoundEffect.getSoundEffectId()).collect(Collectors.toList());
+			boolean muteSound = false;
+			for (int i = 0; i < mutedAmbientsSameID.size() && !muteSound; i++)
 			{
-				if (!ambientSoundsToMute.contains(ambientSoundEffect.getSoundEffectId()))
+				int[] backgroundSounds = ambientSoundEffect.getBackgroundSoundEffectIds();
+				int[] backgroundSoundsToMute = mutedAmbientsSameID.get(i).backGroundSoundEffect;
+
+				if (backgroundSounds == null && backgroundSoundsToMute.length == 0)
 				{
-					soundsToKeep.add(ambientSoundEffect);
+					muteSound = true;
+				}
+				if (backgroundSounds != null && backgroundSoundsToMute.length == 0)
+				{
+					muteSound = true;
+				}
+				if (backgroundSounds != null && backgroundSoundsToMute.length != 0 && arraysLikeEnough(backgroundSounds, backgroundSoundsToMute))
+				{
+					muteSound = true;
 				}
 			}
-
-			// clear the deque (mutes all sounds)
-			client.getAmbientSoundEffects().clear();
-
-			// add the sounds not black listed back in
-			for (AmbientSoundEffect ambientSoundEffect: soundsToKeep)
+			if (!muteSound)
 			{
-				client.getAmbientSoundEffects().addLast(ambientSoundEffect);
+				soundsToKeep.add(ambientSoundEffect);
 			}
 		}
+
+		// clear the deque (mutes all sounds)
+		client.getAmbientSoundEffects().clear();
+
+		// add the sounds not black listed back in
+		for (AmbientSoundEffect ambientSoundEffect : soundsToKeep)
+		{
+			client.getAmbientSoundEffects().addLast(ambientSoundEffect);
+		}
+	}
+
+	// i can't be asked to find every single instance of 2184's ambient sound and all unique arrays
+	// so let's find similar ones and include them as mutes
+	private boolean arraysLikeEnough(int[] array1, int[] array2)
+	{
+		int total = 0;
+		int totalSimilar = 0;
+
+		for (int int1 : array1)
+		{
+			total++;
+			for (int int2 : array2)
+			{
+				if (int1 == int2)
+				{
+					totalSimilar++;
+				}
+			}
+		}
+
+		return ((double) totalSimilar / total > 0.75);
 	}
 
 	private void setUpMutes()
@@ -164,141 +246,141 @@ public class AnnoyanceMutePlugin extends Plugin
 
 		if (config.muteREEEE())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.ACB_REEEE, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.ACB_REEEE, SoundEffectType.EITHER));
 		}
 		if (config.muteCannon())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.CANNON_SPIN, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.SHATTERED_CANNON_SPIN, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.CANNON_SPIN, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.SHATTERED_CANNON_SPIN, SoundEffectType.EITHER));
 		}
 		if (config.muteIceSpells())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.ICE_BARRAGE_CAST, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.ICE_BLITZ_CAST, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.ICE_BURST_CAST, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.ICE_SPELL_LAND, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.ICE_RUSH_CAST, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.ICE_BARRAGE_CAST, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.ICE_BLITZ_CAST, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.ICE_BURST_CAST, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.ICE_SPELL_LAND, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.ICE_RUSH_CAST, SoundEffectType.EITHER));
 		}
 		if (config.muteThralls())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.WATER_STRIKE_CAST, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.WATER_STRIKE_LAND, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.ZOMBIE_THRALL_ATTACK, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.WATER_STRIKE_CAST, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.WATER_STRIKE_LAND, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.ZOMBIE_THRALL_ATTACK, SoundEffectType.EITHER));
 		}
 
 		// ------- NPCs -------
 		if (config.muteCaveHorrors())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.CAVE_HORROR, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.CAVE_HORROR, SoundEffectType.EITHER));
 		}
 		if (config.muteCows())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.MOO_MOO, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.MOO_MOO, SoundEffectType.EITHER));
 		}
 		if (config.muteDemons())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.GREATER_DEMON_ATTACK, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.GREATER_DEMON_DEATH, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.GREATER_DEMON_PARRY, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.DEMON_ATTACK, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.DEMON_DEATH, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.DEMON_PARRY, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.GREATER_DEMON_ATTACK, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.GREATER_DEMON_DEATH, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.GREATER_DEMON_PARRY, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.DEMON_ATTACK, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.DEMON_DEATH, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.DEMON_PARRY, SoundEffectType.EITHER));
 		}
 		if (config.muteDustDevils())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.DUST_DEVIL_ATTACK, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.DUST_DEVIL_DEATH, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.DUST_DEVIL_PARRY, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.DUST_DEVIL_ATTACK, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.DUST_DEVIL_DEATH, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.DUST_DEVIL_PARRY, SoundEffectType.EITHER));
 		}
 		if (config.muteWyverns())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.FOSSIL_ISLAND_WYVERN_69, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.FOSSIL_ISLAND_WYVERN_71, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.FOSSIL_ISLAND_WYVERN_73, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.FOSSIL_ISLAND_WYVERN_69, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.FOSSIL_ISLAND_WYVERN_71, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.FOSSIL_ISLAND_WYVERN_73, SoundEffectType.EITHER));
 		}
 		if (config.muteJellies())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.JELLY_ATTACK, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.JELLY_DEATH, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.JELLY_PARRY, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.JELLY_ATTACK, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.JELLY_DEATH, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.JELLY_PARRY, SoundEffectType.EITHER));
 		}
 		if (config.muteNailBeasts())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.NAIL_BEAST_ATTACK, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.NAIL_BEAST_DEATH, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.NAIL_BEAST_PARRY, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.NAIL_BEAST_ATTACK, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.NAIL_BEAST_DEATH, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.NAIL_BEAST_PARRY, SoundEffectType.EITHER));
 		}
 		if (config.muteNechryael())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.NECHRYAEL_ATTACK, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.NECHRYAE_DEATH, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.NECHRYAEL_PARRY, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.NECHRYAEL_ATTACK, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.NECHRYAE_DEATH, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.NECHRYAEL_PARRY, SoundEffectType.EITHER));
 		}
 		if (config.muteNightmare())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.NIGHTMARE_SOUND, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.NIGHTMARE_SOUND, SoundEffectType.EITHER));
 		}
 		if (config.mutePetSounds())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.SNAKELING_METAMORPHOSIS, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.CLOCKWORK_CAT_CLICK_CLICK, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.PET_KREEARRA_WING_FLAP, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.ELECTRIC_HYDRA_IN, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.ELECTRIC_HYDRA_OUT, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.IKKLE_HYDRA_RIGHT_FOOT_LETS_STOMP, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.IKKLE_HYDRA_LEFT_FOOT_LETS_STOMP, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.PET_WALKING_THUMP, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.VETION_JR_RIGHT_FOOT_LETS_STOMP, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.VETION_JR_LEFT_FOOT_LETS_STOMP, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.SNAKELING_METAMORPHOSIS, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.CLOCKWORK_CAT_CLICK_CLICK, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.PET_KREEARRA_WING_FLAP, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.ELECTRIC_HYDRA_IN, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.ELECTRIC_HYDRA_OUT, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.IKKLE_HYDRA_RIGHT_FOOT_LETS_STOMP, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.IKKLE_HYDRA_LEFT_FOOT_LETS_STOMP, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.PET_WALKING_THUMP, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.VETION_JR_RIGHT_FOOT_LETS_STOMP, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.VETION_JR_LEFT_FOOT_LETS_STOMP, SoundEffectType.EITHER));
 		}
 		if (config.mutePetSounds() || config.muteRandoms())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.CAT_HISS, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.CAT_HISS, SoundEffectType.EITHER));
 		}
 
 		// Applicable to both pet sounds and random event sounds
 		if (config.muteRandoms())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.NPC_TELEPORT_WOOSH, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.DRUNKEN_DWARF, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.NPC_TELEPORT_WOOSH, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.DRUNKEN_DWARF, SoundEffectType.EITHER));
 		}
 		if (config.muteScarabs())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.SCARAB_ATTACK_SOUND, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.SCARAB_SPAWN_SOUND, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.SCARAB_ATTACK_SOUND, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.SCARAB_SPAWN_SOUND, SoundEffectType.EITHER));
 		}
 		if (config.muteSire())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.SIRE_SPAWNS, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.SIRE_SPAWNS_DEATH, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.SIRE_SPAWNS, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.SIRE_SPAWNS_DEATH, SoundEffectType.EITHER));
 		}
 		if (config.muteSpectres())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.SPECTRE_ATTACK_SHOOT, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.SPECTRE_ATTACK_HIT, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.SPECTRE_DEATH, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.SPECTRE_PARRY, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.SPECTRE_ATTACK_SHOOT, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.SPECTRE_ATTACK_HIT, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.SPECTRE_DEATH, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.SPECTRE_PARRY, SoundEffectType.EITHER));
 		}
 		if (config.muteTekton())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.METEOR, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.METEOR, SoundEffectType.EITHER));
 		}
 		if (config.muteTownCrierSounds())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.TOWN_CRIER_BELL_DING, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.TOWN_CRIER_BELL_DONG, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.TOWN_CRIER_SHOUT_SQUEAK, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.TOWN_CRIER_BELL_DING, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.TOWN_CRIER_BELL_DONG, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.TOWN_CRIER_SHOUT_SQUEAK, SoundEffectType.EITHER));
 		}
 
 		// ------- Skilling -------
 		if (config.muteAlchemy())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.HIGH_ALCHEMY, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.LOW_ALCHEMY, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.HIGH_ALCHEMY, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.LOW_ALCHEMY, SoundEffectType.EITHER));
 		}
 		if (config.muteChopChop())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.CHOP_CHOP, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.CHOP_CHOP, SoundEffectType.EITHER));
 		}
 		if (config.muteSmashing())
 		{
@@ -306,239 +388,239 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 		if (config.muteDenseEssence())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.CHISEL, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.CHISEL, SoundEffectType.EITHER));
 		}
 		if (config.muteFiremaking())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.FIREMAKING_LOG_BURN, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.FIREMAKING_LOG_LIGHT, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.FIREMAKING_LOG_BURN, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.FIREMAKING_LOG_LIGHT, SoundEffectType.EITHER));
 		}
 		if (config.muteFishing())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.FISHING_SOUND, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.FISHING_SOUND, SoundEffectType.EITHER));
 		}
 		if (config.muteFletching())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.FLETCHING_CUT, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.AMETHYST_FLETCHING, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.FLETCHING_CUT, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.AMETHYST_FLETCHING, SoundEffectType.EITHER));
 		}
 		if (config.muteAOESounds())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.HUMIDIFY_SOUND, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.HUMIDIFY_SOUND, SoundEffectType.EITHER));
 		}
 		if (config.mutePickpocket())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.PICKPOCKET_PLOP, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.PICKPOCKET_PLOP, SoundEffectType.EITHER));
 		}
 		if (config.mutePickpocketStun())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.PICKPOCKET_STUN, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.PICKPOCKET_STUN, SoundEffectType.EITHER));
 		}
 		if (config.muteMining())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.MINING_PICK_SWING_1, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.MINING_PICK_SWING_2, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.MINING_PICK_SWING_1, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.MINING_PICK_SWING_2, SoundEffectType.EITHER));
 		}
 		if (config.mutePlankMake())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.PLANK_MAKE, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.PLANK_MAKE, SoundEffectType.EITHER));
 		}
 		if (config.muteStringJewellery())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.STRING_JEWELLERY, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.STRING_JEWELLERY, SoundEffectType.EITHER));
 		}
 		if (config.muteWoodcutting())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.WOODCUTTING_CHOP, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.WOODCUTTING_CHOP, SoundEffectType.EITHER));
 		}
 		if (config.muteChargeOrb())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.CHARGE_EARTH_ORB, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.CHARGE_AIR_ORB, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.CHARGE_FIRE_ORB, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.CHARGE_WATER_ORB, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.CHARGE_EARTH_ORB, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.CHARGE_AIR_ORB, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.CHARGE_FIRE_ORB, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.CHARGE_WATER_ORB, SoundEffectType.EITHER));
 		}
 		// ------- Prayers -------
 		if (config.muteThickSkin())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.THICK_SKIN, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.THICK_SKIN, SoundEffectType.EITHER));
 		}
 		if (config.muteBurstofStrength())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.BURST_OF_STRENGTH, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.BURST_OF_STRENGTH, SoundEffectType.EITHER));
 		}
 		if (config.muteClarityOfThought())
 		{
 
-			soundEffects.add(new SoundEffect(SoundEffectID.CLARITY_OF_THOUGHT, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.CLARITY_OF_THOUGHT, SoundEffectType.EITHER));
 		}
 		if (config.muteRockSkin())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.ROCK_SKIN, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.ROCK_SKIN, SoundEffectType.EITHER));
 		}
 		if (config.muteSuperhumanStrength())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.SUPERHUMAN_STRENGTH, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.SUPERHUMAN_STRENGTH, SoundEffectType.EITHER));
 		}
 		if (config.muteImprovedReflexes())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.IMPROVED_REFLEXES, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.IMPROVED_REFLEXES, SoundEffectType.EITHER));
 		}
 		if (config.muteRapidHeal())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.RAPID_HEAL, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.RAPID_HEAL, SoundEffectType.EITHER));
 		}
 		if (config.muteProtectItem())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.PROTECT_ITEM, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.PROTECT_ITEM, SoundEffectType.EITHER));
 		}
 		if (config.muteHawkEye())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.HAWK_EYE, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.HAWK_EYE, SoundEffectType.EITHER));
 		}
 		if (config.muteMysticLore())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.MYSTIC_LORE, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.MYSTIC_LORE, SoundEffectType.EITHER));
 		}
 		if (config.muteSteelSkin())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.STEEL_SKIN, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.STEEL_SKIN, SoundEffectType.EITHER));
 		}
 		if (config.muteUltimateStrength())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.ULTIMATE_STRENGTH, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.ULTIMATE_STRENGTH, SoundEffectType.EITHER));
 		}
 		if (config.muteIncredibleReflexes())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.INCREDIBLE_REFLEXES, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.INCREDIBLE_REFLEXES, SoundEffectType.EITHER));
 		}
 		if (config.muteProtectFromMagic())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.PROTECT_FROM_MAGIC, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.PROTECT_FROM_MAGIC, SoundEffectType.EITHER));
 		}
 		if (config.muteProtectFromRange())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.PROTECT_FROM_RANGE, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.PROTECT_FROM_RANGE, SoundEffectType.EITHER));
 		}
 		if (config.muteProtectFromMelee())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.PROTECT_FROM_MELEE, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.PROTECT_FROM_MELEE, SoundEffectType.EITHER));
 		}
 		if (config.muteEagleEye())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.EAGLE_EYE, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.EAGLE_EYE, SoundEffectType.EITHER));
 		}
 		if (config.muteMysticMight())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.MYSTIC_MIGHT, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.MYSTIC_MIGHT, SoundEffectType.EITHER));
 		}
 		if (config.muteRetribution())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.RETRIBUTION, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.RETRIBUTION, SoundEffectType.EITHER));
 		}
 		if (config.muteRedemption())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.REDEMPTION, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.REDEMPTION, SoundEffectType.EITHER));
 		}
 		if (config.muteSmite())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.SMITE, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.SMITE, SoundEffectType.EITHER));
 		}
 		if (config.mutePreserve())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.PRESERVE, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.PRESERVE, SoundEffectType.EITHER));
 		}
 		if (config.muteChivalry())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.CHIVALRY, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.CHIVALRY, SoundEffectType.EITHER));
 		}
 		if (config.mutePiety())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.PIETY, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.PIETY, SoundEffectType.EITHER));
 		}
 		if (config.muteRigour())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.RIGOUR, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.RIGOUR, SoundEffectType.EITHER));
 		}
 		if (config.muteAugury())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.AUGURY, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.AUGURY, SoundEffectType.EITHER));
 		}
 		if (config.muteDeactivatePrayer())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.DEACTIVATE_PRAYER, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.DEACTIVATE_PRAYER, SoundEffectType.EITHER));
 		}
 
 		// ------- Miscellaneous -------
 		if (config.muteFishingExplosive())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.FISHING_EXPLOSIVE, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.FISHING_EXPLOSIVE, SoundEffectType.EITHER));
 		}
 		if (config.muteHealOther())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.HEAL_OTHER_2, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.HEAL_OTHER_3, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.HEAL_OTHER_4, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.HEAL_OTHER_5, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.HEAL_OTHER_2, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.HEAL_OTHER_3, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.HEAL_OTHER_4, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.HEAL_OTHER_5, SoundEffectType.EITHER));
 		}
 		if (config.muteItemDrop())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.ITEM_DROP, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.ITEM_DROP, SoundEffectType.EITHER));
 		}
 		if (config.muteLevelUp())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.LEVEL_UP_1, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.LEVEL_UP_2, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.LEVEL_UP_1, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.LEVEL_UP_2, SoundEffectType.EITHER));
 		}
 		if (config.muteNPCContact())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.NPC_CONTACT, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.NPC_CONTACT, SoundEffectType.EITHER));
 		}
 		if (config.muteSnowballSounds())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.SNOWBALL_HIT, SoundEffectType.Either));
-			soundEffects.add(new SoundEffect(SoundEffectID.SNOWBALL_THROW, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.SNOWBALL_HIT, SoundEffectType.EITHER));
+			soundEffects.add(new SoundEffect(SoundEffectID.SNOWBALL_THROW, SoundEffectType.EITHER));
 		}
 		if (config.muteTeleother())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.TELEOTHER, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEOTHER, SoundEffectType.EITHER));
 		}
 		if (config.muteTeleport())
 		{
 			if (config.muteTeleportOthers())
 			{
-				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 714)); // Normal
-				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 1816)); // Lunar
-				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3864)); // Scroll
-				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3865)); // Xeric
-				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3867)); // Wilderness
-				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3869)); // Cabbage
-				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3872)); // Ardougne
-				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3874)); // Burgh
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 714)); // Normal
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 1816)); // Lunar
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 3864)); // Scroll
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 3865)); // Xeric
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 3867)); // Wilderness
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 3869)); // Cabbage
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 3872)); // Ardougne
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 3874)); // Burgh
 			}
 			else
 			{
-				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either));
+				soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER));
 			}
 		}
 		else if (config.muteTeleportOthers())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 714)); // Normal
-			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 1816)); // Lunar
-			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3864)); // Scroll
-			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3865)); // Xeric
-			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3867)); // Wilderness
-			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3869)); // Cabbage
-			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3872)); // Ardougne
-			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.Either, 3874)); // Burgh
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 714)); // Normal
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 1816)); // Lunar
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 3864)); // Scroll
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 3865)); // Xeric
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 3867)); // Wilderness
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 3869)); // Cabbage
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 3872)); // Ardougne
+			soundEffects.add(new SoundEffect(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, 3874)); // Burgh
 		}
 		if (config.muteRubberChickenSounds())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.WHACK, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.WHACK, SoundEffectType.EITHER));
 		}
 		if (config.muteObelisk())
 		{
-			soundEffects.add(new SoundEffect(SoundEffectID.WILDY_OBELISK, SoundEffectType.Either));
+			soundEffects.add(new SoundEffect(SoundEffectID.WILDY_OBELISK, SoundEffectType.EITHER));
 		}
 
 		// Ambient Sounds
@@ -546,24 +628,55 @@ public class AnnoyanceMutePlugin extends Plugin
 
 		if (config.muteMagicTrees())
 		{
-			ambientSoundsToMute.add(SoundEffectID.MAGIC_TREE);
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.MAGIC_TREE, SoundEffectType.AMBIENT));
 		}
-
 		if (config.muteWhiteNoise())
 		{
-			ambientSoundsToMute.add(SoundEffectID.STATIC_1);
-			ambientSoundsToMute.add(SoundEffectID.STATIC_2);
-			ambientSoundsToMute.add(SoundEffectID.STATIC_3);
-		}
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_STATIC_1));
 
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_2, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_3, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_4, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_5, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_6, SoundEffectType.AMBIENT));
+		}
 		if (config.muteChirps())
 		{
-			ambientSoundsToMute.add(SoundEffectID.CRICKET_1);
-			ambientSoundsToMute.add(SoundEffectID.CRICKET_2);
-			ambientSoundsToMute.add(SoundEffectID.CRICKET_3);
-			ambientSoundsToMute.add(SoundEffectID.CRICKET_4);
-			ambientSoundsToMute.add(SoundEffectID.CRICKET_5);
-			ambientSoundsToMute.add(SoundEffectID.CRICKET_6);
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_BIRD_1));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_BIRD_2));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_BIRD_3));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_BIRD_4));
+
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.CRICKET_1, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.CRICKET_2, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.CRICKET_3, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.CRICKET_4, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.CRICKET_5, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.CRICKET_6, SoundEffectType.AMBIENT));
+		}
+		if (config.muteWater())
+		{
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_WATER_1));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_WATER_2));
+
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_1, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_2, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_3, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_4, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_5, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_6, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_7, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_8, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_9, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_10, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_11, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.WATER_12, SoundEffectType.AMBIENT));
+		}
+		if (config.muteRanges())
+		{
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.RANGE_1, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.RANGE_2, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COOKING_POT, SoundEffectType.AMBIENT));
 		}
 	}
 
@@ -625,7 +738,7 @@ public class AnnoyanceMutePlugin extends Plugin
 
 		List<SoundEffect> filteredSoundEffects = soundEffects.stream().filter(
 			s -> s.id == soundEffect.id
-			&& (s.type == SoundEffectType.Either || s.type == soundEffect.type)
+				&& (s.type == SoundEffectType.EITHER || s.type == soundEffect.type)
 		).collect(Collectors.toCollection(ArrayList::new));
 
 		if (filteredSoundEffects.size() == 0)

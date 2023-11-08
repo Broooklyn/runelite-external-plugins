@@ -69,9 +69,9 @@ public interface AnnoyanceMuteConfig extends Config
 	String miscSection = "Miscellaneous";
 
 	@ConfigSection(
-			name = "Ambient",
-			description = "Ambient sounds to mute",
-			position = 5
+		name = "Ambient",
+		description = "Ambient sounds to mute",
+		position = 5
 	)
 	String ambientSection = "Ambient";
 
@@ -307,10 +307,10 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-			keyName = "muteWhiteNoise",
-			name = "Mute White Noise",
-			description = "Mutes the white noises/static filler sounds",
-			section = ambientSection
+		keyName = "muteWhiteNoise",
+		name = "White Noise",
+		description = "Mutes the white noises/static filler sounds",
+		section = ambientSection
 	)
 	default boolean muteWhiteNoise()
 	{
@@ -319,15 +319,38 @@ public interface AnnoyanceMuteConfig extends Config
 
 	@ConfigItem(
 		keyName = "muteChirps",
-		name = "Mute Chirps",
-		description = "Mutes the chirping sounds",
+		name = "Chirps",
+		description = "Mutes the birds and cricket sounds",
 		section = ambientSection
 	)
 	default boolean muteChirps()
 	{
 		return true;
 	}
-	
+
+	@ConfigItem(
+		keyName = "muteWater",
+		name = "Water",
+		description = "Mutes the sound of water at shores or fountains",
+		section = ambientSection
+	)
+	default boolean muteWater()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+		keyName = "muteRanges",
+		name = "Ranges",
+		description = "Mutes the sound of cooking ranges",
+		section = ambientSection
+	)
+	default boolean muteRanges()
+	{
+		return true;
+	}
+
+
 	@ConfigItem(
 		keyName = "muteRandoms",
 		name = "Random Events",
@@ -615,10 +638,10 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-			keyName = "muteChargeOrb",
-			name = "Charge Orb",
-			description = "Mutes the sounds of Charge Orb spells",
-			section = skillingSection
+		keyName = "muteChargeOrb",
+		name = "Charge Orb",
+		description = "Mutes the sounds of Charge Orb spells",
+		section = skillingSection
 	)
 	default boolean muteChargeOrb()
 	{
@@ -950,10 +973,10 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-			keyName = "soundsToMute",
-			name = "Muted Sounds",
-			description = "Enter IDs of the sounds you wish to mute",
-			position = 28
+		keyName = "soundsToMute",
+		name = "Muted Sounds",
+		description = "Enter IDs of the sounds you wish to mute",
+		position = 28
 	)
 	default String soundsToMute()
 	{
