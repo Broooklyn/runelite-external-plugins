@@ -8,9 +8,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum SoundEffectType
 {
-	Either("Either", 0),
+	EITHER("Either", 0),
 	SOUND_EFFECT("Sound Effect", 1),
-	AREA_SOUND_EFFECT("Area Sound Effect", 2);
+	AREA_SOUND_EFFECT("Area Sound Effect", 2),
+
+	AMBIENT("Ambient", 3);
 
 	private final String name;
 	private final int type;

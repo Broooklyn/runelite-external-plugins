@@ -308,7 +308,7 @@ public interface AnnoyanceMuteConfig extends Config
 
 	@ConfigItem(
 			keyName = "muteWhiteNoise",
-			name = "Mute White Noise",
+			name = "White Noise",
 			description = "Mutes the white noises/static filler sounds",
 			section = ambientSection
 	)
@@ -319,8 +319,8 @@ public interface AnnoyanceMuteConfig extends Config
 
 	@ConfigItem(
 		keyName = "muteChirps",
-		name = "Mute Chirps",
-		description = "Mutes the chirping sounds",
+		name = "Chirps",
+		description = "Mutes the birds and cricket sounds",
 		section = ambientSection
 	)
 	default boolean muteChirps()
@@ -330,8 +330,8 @@ public interface AnnoyanceMuteConfig extends Config
 
 	@ConfigItem(
 		keyName = "muteWater",
-		name = "Mute Water",
-		description = "Mutes the sound of water at shores",
+		name = "Water",
+		description = "Mutes the sound of water at shores or fountains",
 		section = ambientSection
 	)
 	default boolean muteWater()
@@ -341,7 +341,7 @@ public interface AnnoyanceMuteConfig extends Config
 
 	@ConfigItem(
 		keyName = "muteRanges",
-		name = "Mute Ranges",
+		name = "Ranges",
 		description = "Mutes the sound of cooking ranges",
 		section = ambientSection
 	)

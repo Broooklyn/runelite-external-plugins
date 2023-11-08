@@ -6,11 +6,14 @@ public class SoundEffect
 	SoundEffectType type;
 	int animID;
 
+	int[] backGroundSoundEffect;
+
 	public SoundEffect(int id, SoundEffectType type)
 	{
 		this.id = id;
 		this.type = type;
 		this.animID = -1;
+		backGroundSoundEffect = new int[]{};
 	}
 
 	public SoundEffect(int id, SoundEffectType type, int animID)
@@ -18,5 +21,14 @@ public class SoundEffect
 		this.id = id;
 		this.type = type;
 		this.animID = animID;
+		backGroundSoundEffect = new int[]{};
+	}
+
+	public SoundEffect(int id, SoundEffectType type, int[] backGroundSoundEffect)
+	{
+		this.id = id;
+		this.type = type;
+		this.animID = -1;
+		this.backGroundSoundEffect = backGroundSoundEffect;
 	}
 }

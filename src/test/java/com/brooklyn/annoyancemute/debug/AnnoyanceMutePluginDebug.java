@@ -84,8 +84,21 @@ public class AnnoyanceMutePluginDebug extends Plugin
 		WorldPoint worldPointMin = WorldPoint.fromLocalInstance(client, ambientSoundEffect.getMinPosition());
 		WorldPoint worldPointMax = WorldPoint.fromLocalInstance(client, ambientSoundEffect.getMaxPosition());
 
-		ColorTileMarker pointMin = new ColorTileMarker(worldPointMin, Color.RED, String.valueOf(ambientSoundEffect.getSoundEffectId()) + " min");
-		ColorTileMarker pointMax = new ColorTileMarker(worldPointMax, Color.RED, String.valueOf(ambientSoundEffect.getSoundEffectId()) + " max");
+		int[] b = ambientSoundEffect.getBackgroundSoundEffectIds();
+
+		StringBuilder stringBuilder = new StringBuilder();
+		if (b == null)
+		{
+			stringBuilder.append(",");
+		} else {
+			for (int i: b)
+			{
+				stringBuilder.append("," + i);
+			}
+		}
+
+		ColorTileMarker pointMin = new ColorTileMarker(worldPointMin, Color.RED, String.valueOf(ambientSoundEffect.getSoundEffectId()) + "min (" + stringBuilder.toString().substring(1) + ")");
+		ColorTileMarker pointMax = new ColorTileMarker(worldPointMax, Color.RED, String.valueOf(ambientSoundEffect.getSoundEffectId()) + "max (" + stringBuilder.toString().substring(1) + ")");
 
 		points.add(pointMin);
 		points.add(pointMax);

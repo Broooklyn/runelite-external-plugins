@@ -250,9 +250,11 @@ public final class SoundEffectID
 
 	// Ambient Static sounds
 	protected final static int STATIC_1 = 2184;
+	protected final static int[] COMMON_BACKGROUND_2184_STATIC_1_1 = new int[] {2184, 2185, 2073, 2074, 2075};
+
 	protected final static int STATIC_2 = 2185;
 	protected final static int STATIC_3 = 2083;
-	protected final static int STATIC_4 = 2066; // TODO CONFIRM THIS
+	protected final static int STATIC_4 = 2066;
 	protected final static int STATIC_5 = 2169;
 	protected final static int STATIC_6 = 2088; // this is some noise in rimmington
 
@@ -263,7 +265,12 @@ public final class SoundEffectID
 	protected final static int CRICKET_4 = 1993;
 	protected final static int CRICKET_5 = 1994;
 	protected final static int CRICKET_6 = 1995;
-	protected final static int BIRD_1 = 2184; // 2184 is both static and chirping, plays chirps when in wooded areas
+	protected final static int BIRD_1 = 2184;
+	protected final static int[] COMMON_BACKGROUND_2184_BIRD_1_1 = new int[]{1984, 1985, 1986, 1987, 1988};
+
+	protected final static int[] COMMON_BACKGROUND_2184_BIRD_1_2 = new int[]{2019, 2020, 2013, 2014, 2057, 2076, 2012};
+	protected final static int[] COMMON_BACKGROUND_2184_BIRD_1_3 = new int[]{2010, 2012, 2011, 2073}; // draynor village owls
+	protected final static int[] COMMON_BACKGROUND_2184_BIRD_1_4 = new int[]{2070, 2071, 2073, 2074, 2075, 2072, 2184}; // draynor village owls
 
 	// Water
 	protected final static int WATER_1 = 2158;
@@ -276,7 +283,8 @@ public final class SoundEffectID
 	protected final static int WATER_8 = 2150; // lumbridge fountains
 	protected final static int WATER_9 = 2147; // barbarian village bridge
 	protected final static int WATER_10 = 2170; // barbarian village bridge
-	protected final static int WATER_11 = 2184; // 2184 is both static and water, plays shore noises when at water some how
+	protected final static int WATER_11 = 2184;
+	protected final static int[] COMMON_BACKGROUND_2184_WATER_1_1 = new int[]{3083,3084,3085,3086};
 	protected final static int WATER_12 = 3087;
 	protected final static int WATER_13 = 2041; // lumbridge swamp bubbles
 
