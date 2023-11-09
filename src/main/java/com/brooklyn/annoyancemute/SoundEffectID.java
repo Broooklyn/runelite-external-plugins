@@ -248,13 +248,16 @@ public final class SoundEffectID
 	// Magic Tree (Ambient Sound)
 	protected final static int MAGIC_TREE = 3134;
 
+	// House Portal
+	protected final static int HOUSE_PORTAL = 3139;
+
 	// Ambient Static sounds
 
-	protected final static int STATIC_2 = 2185;
-	protected final static int STATIC_3 = 2083;
-	protected final static int STATIC_4 = 2066;
-	protected final static int STATIC_5 = 2169;
-	protected final static int STATIC_6 = 2088; // this is some noise in rimmington
+	protected final static int STATIC_1 = 2185;
+	protected final static int STATIC_2 = 2083;
+	protected final static int STATIC_3 = 2066;
+	protected final static int STATIC_4 = 2169;
+	protected final static int STATIC_5 = 2088; // this is some noise in rimmington
 
 	// Ambient Crickets/Birds
 	protected final static int CRICKET_1 = 1990;
