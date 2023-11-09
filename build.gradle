@@ -9,8 +9,8 @@ repositories {
 	}
 	mavenCentral()
 }
-// TODO Make this latest.release
-def runeLiteVersion = '1.10.16.2'
+
+def runeLiteVersion = 'latest.release'
 def junitVersion = "4.12"
 
 dependencies {
