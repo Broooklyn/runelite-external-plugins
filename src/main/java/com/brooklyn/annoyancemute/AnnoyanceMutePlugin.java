@@ -630,15 +630,19 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.MAGIC_TREE, SoundEffectType.AMBIENT));
 		}
+		if (config.muteHousePortal())
+		{
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.HOUSE_PORTAL, SoundEffectType.AMBIENT));
+		}
 		if (config.muteWhiteNoise())
 		{
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COMMON_BACKGROUND_1, SoundEffectType.AMBIENT, SoundEffectID.COMMON_BACKGROUND_2184_STATIC_1));
 
+			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_1, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_2, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_3, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_4, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_5, SoundEffectType.AMBIENT));
-			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.STATIC_6, SoundEffectType.AMBIENT));
 		}
 		if (config.muteChirps())
 		{

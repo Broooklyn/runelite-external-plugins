@@ -307,6 +307,17 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "muteHousePortal",
+		name = "House Portal",
+		description = "Mutes the sound of House Portal",
+		section = ambientSection
+	)
+	default boolean muteHousePortal()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "muteWhiteNoise",
 		name = "White Noise",
 		description = "Mutes the white noises/static filler sounds",
