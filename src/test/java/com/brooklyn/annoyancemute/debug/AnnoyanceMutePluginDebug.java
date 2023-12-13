@@ -141,7 +141,7 @@ public class AnnoyanceMutePluginDebug extends Plugin
 	/**
 	 * Translate a collection of ambient sound points to ambient sound tiles, accounting for instances
 	 *
-	 * @param points {@link AmbientSoundTileMarker}s to be converted to {@link AmbientSoundPoint}s
+	 * @param points {@link AmbientSoundPoint}s to be converted to {@link AmbientSoundTileMarker}s
 	 * @return A collection of ambient sound tiles, converted from the passed ambient sound points, accounting for local
 	 * instance points. See {@link WorldPoint#toLocalInstance(Client, WorldPoint)}
 	 */
