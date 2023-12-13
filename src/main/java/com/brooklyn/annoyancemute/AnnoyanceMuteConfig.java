@@ -993,4 +993,15 @@ public interface AnnoyanceMuteConfig extends Config
 	{
 		return "";
 	}
+
+	@ConfigItem(
+		keyName = "ambientSoundsToMute",
+		name = "Muted Ambient Sounds",
+		description = "Enter IDs of the ambient sounds you wish to mute",
+		position = 29
+	)
+	default String ambientSoundsToMute()
+	{
+		return "";
+	}
 }

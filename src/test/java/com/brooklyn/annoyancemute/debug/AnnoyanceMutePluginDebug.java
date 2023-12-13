@@ -5,13 +5,17 @@ import com.brooklyn.annoyancemute.AnnoyanceMutePlugin;
 import com.google.inject.Provides;
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import lombok.AccessLevel;
 import lombok.Getter;
 import net.runelite.api.AmbientSoundEffect;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AmbientSoundEffectCreated;
 import net.runelite.api.events.GameStateChanged;
@@ -41,7 +45,10 @@ public class AnnoyanceMutePluginDebug extends Plugin
 	private AnnoyanceMutePlugin plugin;
 
 	@Getter(AccessLevel.PACKAGE)
-	private final List<ColorTileMarker> points = new ArrayList<>();
+	private final List<AmbientSoundTileMarker> points = new ArrayList<>();
+
+	@Getter(AccessLevel.PACKAGE)
+	private final List<AmbientSoundPoint> groundMarkerPoints = new ArrayList<>();
 
 	@Override
 	protected void startUp()
@@ -67,21 +74,27 @@ public class AnnoyanceMutePluginDebug extends Plugin
 		GameState gameState = gameStateChanged.getGameState();
 		if (gameState == GameState.LOGGED_IN)
 		{
-			points.clear();
-			for (AmbientSoundEffect ambientSoundEffect : client.getAmbientSoundEffects())
-			{
-				markTile(ambientSoundEffect);
-			}
+			addSounds();
 		}
 	}
 
-	@Subscribe(priority = -1) // priority -1 to run after AnnoyanceMutePlugin
+	@Subscribe(priority = -3) // priority -3 to run after AnnoyanceMutePlugin
 	public void onAmbientSoundEffectCreated(AmbientSoundEffectCreated ambientSoundEffectCreated)
 	{
+		addSounds();
+	}
+
+	private void addSounds()
+	{
+		points.clear();
+		groundMarkerPoints.clear();
 		for (AmbientSoundEffect ambientSoundEffect : client.getAmbientSoundEffects())
 		{
 			markTile(ambientSoundEffect);
 		}
+
+		Collection<AmbientSoundTileMarker> colorTileMarkers = translateToColorTileMarker(groundMarkerPoints);
+		points.addAll(colorTileMarkers);
 	}
 
 	private void markTile(AmbientSoundEffect ambientSoundEffect)
@@ -90,9 +103,6 @@ public class AnnoyanceMutePluginDebug extends Plugin
 		{
 			return;
 		}
-
-		WorldPoint worldPointMin = WorldPoint.fromLocalInstance(client, ambientSoundEffect.getMinPosition());
-		WorldPoint worldPointMax = WorldPoint.fromLocalInstance(client, ambientSoundEffect.getMaxPosition());
 
 		int[] b = ambientSoundEffect.getBackgroundSoundEffectIds();
 
@@ -109,10 +119,48 @@ public class AnnoyanceMutePluginDebug extends Plugin
 			}
 		}
 
-		ColorTileMarker pointMin = new ColorTileMarker(worldPointMin, Color.RED, String.valueOf(ambientSoundEffect.getSoundEffectId()) + "min (" + stringBuilder.toString().substring(1) + ")");
-		ColorTileMarker pointMax = new ColorTileMarker(worldPointMax, Color.RED, String.valueOf(ambientSoundEffect.getSoundEffectId()) + "max (" + stringBuilder.toString().substring(1) + ")");
+		markTile(ambientSoundEffect.getMinPosition(), String.valueOf(ambientSoundEffect.getSoundEffectId()) + "min (" + stringBuilder.toString().substring(1) + ")");
+		markTile(ambientSoundEffect.getMaxPosition(), String.valueOf(ambientSoundEffect.getSoundEffectId()) + "max (" + stringBuilder.toString().substring(1) + ")");
+	}
 
-		points.add(pointMin);
-		points.add(pointMax);
+	private void markTile(LocalPoint localPoint, String label)
+	{
+		if (localPoint == null)
+		{
+			return;
+		}
+
+		WorldPoint worldPoint = WorldPoint.fromLocalInstance(client, localPoint);
+
+		int regionId = worldPoint.getRegionID();
+		AmbientSoundPoint point = new AmbientSoundPoint(regionId, worldPoint.getRegionX(), worldPoint.getRegionY(), worldPoint.getPlane(), Color.RED, label);
+
+		groundMarkerPoints.add(point);
+	}
+
+	/**
+	 * Translate a collection of ambient sound points to ambient sound tiles, accounting for instances
+	 *
+	 * @param points {@link AmbientSoundTileMarker}s to be converted to {@link AmbientSoundPoint}s
+	 * @return A collection of ambient sound tiles, converted from the passed ambient sound points, accounting for local
+	 * instance points. See {@link WorldPoint#toLocalInstance(Client, WorldPoint)}
+	 */
+	public Collection<AmbientSoundTileMarker> translateToColorTileMarker(Collection<AmbientSoundPoint> points)
+	{
+		if (points.isEmpty())
+		{
+			return Collections.emptyList();
+		}
+
+		return points.stream()
+			.map(point -> new AmbientSoundTileMarker(
+				WorldPoint.fromRegion(point.getRegionId(), point.getRegionX(), point.getRegionY(), point.getZ()),
+				point.getColor(), point.getLabel()))
+			.flatMap(colorTile ->
+			{
+				final Collection<WorldPoint> localWorldPoints = WorldPoint.toLocalInstance(client, colorTile.getWorldPoint());
+				return localWorldPoints.stream().map(wp -> new AmbientSoundTileMarker(wp, colorTile.getColor(), colorTile.getLabel()));
+			})
+			.collect(Collectors.toList());
 	}
 }
