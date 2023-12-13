@@ -138,7 +138,7 @@ public class AnnoyanceMutePlugin extends Plugin
 	}
 
 
-	@Subscribe
+	@Subscribe(priority = -2) // priority -2 to run after music plugin
 	public void onAmbientSoundEffectCreated(AmbientSoundEffectCreated ambientSoundEffectCreated)
 	{
 		// if nothing to mute then return
@@ -682,6 +682,12 @@ public class AnnoyanceMutePlugin extends Plugin
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.RANGE_2, SoundEffectType.AMBIENT));
 			ambientSoundsToMute.add(new SoundEffect(SoundEffectID.COOKING_POT, SoundEffectType.AMBIENT));
 		}
+
+		// add the user defined ambient sounds to mute to the list manually
+		for (int i : getSelectedAmbientSounds())
+		{
+			ambientSoundsToMute.add(new SoundEffect(i, SoundEffectType.AMBIENT));
+		}
 	}
 
 	@Subscribe
@@ -765,5 +771,36 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 
 		return Text.fromCSV(configSounds);
+	}
+
+	public List<Integer> getSelectedAmbientSounds()
+	{
+		final String configSounds = config.ambientSoundsToMute().toLowerCase();
+
+		List<String> configValue = Text.fromCSV(configSounds);
+
+		ArrayList<Integer> returnValues = new ArrayList<>();
+		for (String str : configValue)
+		{
+			if (tryParseInt(str))
+			{
+				returnValues.add(Integer.parseInt(str));
+			}
+		}
+
+		return returnValues;
+	}
+
+	private boolean tryParseInt(String value)
+	{
+		try
+		{
+			Integer.parseInt(value);
+			return true;
+		}
+		catch (NumberFormatException e)
+		{
+			return false;
+		}
 	}
 }

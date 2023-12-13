@@ -41,14 +41,14 @@ public class AnnoyanceMuteOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		final Collection<ColorTileMarker> points = plugin.getPoints();
+		final Collection<AmbientSoundTileMarker> points = plugin.getPoints();
 		if (points.isEmpty())
 		{
 			return null;
 		}
 
 		Stroke stroke = new BasicStroke((float) 2);
-		for (final ColorTileMarker point : points)
+		for (final AmbientSoundTileMarker point : points)
 		{
 			WorldPoint worldPoint = point.getWorldPoint();
 			if (worldPoint.getPlane() != client.getPlane())
