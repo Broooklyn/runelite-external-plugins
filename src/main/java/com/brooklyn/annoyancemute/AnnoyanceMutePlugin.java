@@ -738,7 +738,7 @@ public class AnnoyanceMutePlugin extends Plugin
 	}
 
 	@VisibleForTesting
-	boolean shouldMute(int soundId, SoundEffectType type)
+	public boolean shouldMute(int soundId, SoundEffectType type)
 	{
 		SoundEffect soundEffect = new SoundEffect(soundId, type, client.getLocalPlayer().getAnimation());
 		if (getSelectedSounds().contains(Integer.toString(soundId)))

@@ -1,8 +1,6 @@
 package com.brooklyn.annoyancemute.debug;
 
-import com.brooklyn.annoyancemute.AnnoyanceMuteConfig;
 import com.brooklyn.annoyancemute.AnnoyanceMutePlugin;
-import com.google.inject.Provides;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,30 +17,36 @@ import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AmbientSoundEffectCreated;
 import net.runelite.api.events.GameStateChanged;
-import net.runelite.client.config.ConfigManager;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
+import net.runelite.client.plugins.PluginDependency;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.overlay.OverlayManager;
 
 @PluginDescriptor(
 	name = "Annoyance Mute Debug",
-	description = "Selectively mute annoying game sounds",
+	description = "Annoyance Mute Debug mode",
 	tags = {"sound", "volume", "mute", "hub", "brooklyn", "pet", "stomp"}
 )
+@PluginDependency(AnnoyanceMutePlugin.class)
 public class AnnoyanceMutePluginDebug extends Plugin
 {
 	@Inject
 	Client client;
 
 	@Inject
+	EventBus eventBus;
+
+	@Inject
 	private OverlayManager overlayManager;
 
 	@Inject
-	private AnnoyanceMuteOverlay overlay;
+	private AnnoyanceMuteOverlay annoyanceMuteOverlay;
 
 	@Inject
-	private AnnoyanceMutePlugin plugin;
+	private AnnoyanceMuteSoundEffectOverlay annoyanceMuteSoundEffectOverlay;
+
 
 	@Getter(AccessLevel.PACKAGE)
 	private final List<AmbientSoundTileMarker> points = new ArrayList<>();
@@ -53,19 +57,17 @@ public class AnnoyanceMutePluginDebug extends Plugin
 	@Override
 	protected void startUp()
 	{
-		overlayManager.add(overlay);
-	}
-
-	@Provides
-	AnnoyanceMuteConfig provideConfig(ConfigManager configManager)
-	{
-		return configManager.getConfig(AnnoyanceMuteConfig.class);
+		overlayManager.add(annoyanceMuteOverlay);
+		overlayManager.add(annoyanceMuteSoundEffectOverlay);
+		eventBus.register(annoyanceMuteSoundEffectOverlay);
 	}
 
 	@Override
 	protected void shutDown() throws Exception
 	{
-		overlayManager.remove(overlay);
+		overlayManager.remove(annoyanceMuteOverlay);
+		overlayManager.remove(annoyanceMuteSoundEffectOverlay);
+		eventBus.unregister(annoyanceMuteSoundEffectOverlay);
 	}
 
 	@Subscribe(priority = -3) // priority -3 to run after AnnoyanceMutePlugin
