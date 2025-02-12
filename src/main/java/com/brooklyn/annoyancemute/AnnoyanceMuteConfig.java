@@ -1022,7 +1022,7 @@ public interface AnnoyanceMuteConfig extends Config
 		name = "Deactivate Prayer",
 		description = "Mutes the prayer deactivation sound",
 		section = prayerSection,
-		position = 27
+		position = 29
 	)
 	default boolean muteDeactivatePrayer()
 	{
@@ -1033,7 +1033,7 @@ public interface AnnoyanceMuteConfig extends Config
 		keyName = "soundsToMute",
 		name = "Muted Sounds",
 		description = "Enter IDs of the sounds you wish to mute",
-		position = 28
+		position = 30
 	)
 	default String soundsToMute()
 	{
@@ -1044,7 +1044,7 @@ public interface AnnoyanceMuteConfig extends Config
 		keyName = "ambientSoundsToMute",
 		name = "Muted Ambient Sounds",
 		description = "Enter IDs of the ambient sounds you wish to mute",
-		position = 29
+		position = 31
 	)
 	default String ambientSoundsToMute()
 	{
