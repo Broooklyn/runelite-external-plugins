@@ -355,6 +355,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			soundEffects.add(new GenericSoundEffect(SoundEffectID.NPC_TELEPORT_WOOSH, SoundEffectType.EITHER));
 			soundEffects.add(new GenericSoundEffect(SoundEffectID.DRUNKEN_DWARF, SoundEffectType.EITHER));
+			soundEffects.add(new GenericSoundEffect(SoundEffectID.EVIL_BOB, SoundEffectType.EITHER));
 		}
 		if (config.muteScarabs())
 		{
