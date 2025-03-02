@@ -347,7 +347,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 		if (config.mutePetSounds() || config.muteRandoms())
 		{
-			soundEffects.add(new ActorCombatSoundEffect(SoundEffectID.CAT_HISS, SoundEffectType.EITHER, 0));
+			soundEffects.add(new GenericSoundEffect(SoundEffectID.CAT_HISS, SoundEffectType.EITHER));
 		}
 
 		// Applicable to both pet sounds and random event sounds
@@ -355,6 +355,8 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			soundEffects.add(new GenericSoundEffect(SoundEffectID.NPC_TELEPORT_WOOSH, SoundEffectType.EITHER));
 			soundEffects.add(new GenericSoundEffect(SoundEffectID.DRUNKEN_DWARF, SoundEffectType.EITHER));
+			soundEffects.add(new GenericSoundEffect(SoundEffectID.POSTIE_PETE, SoundEffectType.EITHER));
+			soundEffects.add(new GenericSoundEffect(SoundEffectID.FROG_SPLASH, SoundEffectType.EITHER));
 		}
 		if (config.muteScarabs())
 		{
@@ -749,7 +751,7 @@ public class AnnoyanceMutePlugin extends Plugin
 			{
 				areaSoundEffectPlayed.consume();
 			}
-			if (shouldMute(soundId, SoundEffectType.AREA_SOUND_EFFECT, source))
+			if (shouldMute(soundId, SoundEffectType.AREA_SOUND_EFFECT, null))
 			{
 				areaSoundEffectPlayed.consume();
 			}
@@ -795,13 +797,13 @@ public class AnnoyanceMutePlugin extends Plugin
 			.collect(Collectors.toCollection(ArrayList::new));
 
 		// filter to combat levels
-		List<SoundEffect> actorSoundEffects = source != null ? soundEffects.stream()
+		List<SoundEffect> actorSoundEffects = soundEffects.stream()
 			.filter(ActorCombatSoundEffect.class::isInstance)
 			.map(ActorCombatSoundEffect.class::cast)
 			.filter(s -> s.getId() == soundId
 				&& (s.getSoundEffectType() == SoundEffectType.EITHER || s.getSoundEffectType() == type)
-				&& (s.getActorCombatLevel() == source.getCombatLevel()))
-			.collect(Collectors.toCollection(ArrayList::new)) : Collections.emptyList();
+				&& (source != null && s.getActorCombatLevel() == source.getCombatLevel()))
+			.collect(Collectors.toCollection(ArrayList::new));
 
 		List<SoundEffect> combinedList = new ArrayList<>();
 		combinedList.addAll(genericSoundEffects);

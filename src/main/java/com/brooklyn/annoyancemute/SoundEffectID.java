@@ -90,6 +90,8 @@ public final class SoundEffectID
 	protected final static int NPC_TELEPORT_WOOSH = 1930;
 	protected final static int DRUNKEN_DWARF = 2297;
 	protected final static int EVIL_BOB = 333;
+	protected final static int POSTIE_PETE = 9796;
+	protected final static int FROG_SPLASH = 838;
 
 	// Tekton
 	protected final static int METEOR = 156;
