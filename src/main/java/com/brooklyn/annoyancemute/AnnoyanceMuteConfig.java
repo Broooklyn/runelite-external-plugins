@@ -1007,7 +1007,7 @@ public interface AnnoyanceMuteConfig extends Config
 
 	@ConfigItem(
 		keyName = "muteMysticVigour",
-		name = "Mystic Rigour",
+		name = "Mystic Vigour",
 		description = "Mutes the activation sound of Mystic Vigour",
 		section = prayerSection,
 		position = 28
