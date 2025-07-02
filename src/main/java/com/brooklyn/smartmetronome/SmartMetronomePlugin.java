@@ -312,6 +312,10 @@ public class SmartMetronomePlugin extends Plugin
 		15263, 15262
 	);
 
+	private static final Set<Integer> COLOSSEUM_REGIONS = ImmutableSet.of(
+		7216
+	);
+
 	// Slayer
 
 	private static final Set<Integer> SLAYER_TOWER_REGIONS = ImmutableSet.of(
@@ -335,7 +339,8 @@ public class SmartMetronomePlugin extends Plugin
 		6710, 6711, 6965, 6966, 6967, 6968, 7221, 7223, 7224, 7478, 7479, // Tithe Farm
 		15008, 15264, 15519, 15775, // Volcanic Mine
 		6205, 6461, 6717, // Wintertodt
-		8495, 8496, 8751, 8752, 9008, 9263, 9264, 9265 // Zulrah
+		8495, 8496, 8751, 8752, 9008, 9263, 9264, 9265, // Zulrah
+		6960, 6704, 6705, 6961, 7217, 7472, 7215, 6959, 6703 // Colosseum
 	);
 
 	public void setMetronome()
@@ -620,6 +625,11 @@ public class SmartMetronomePlugin extends Plugin
 			}
 
 			else if (config.volcanicMineMetronome() && VOLCANIC_MINE_REGIONS.contains(mapregion))
+			{
+				return true;
+			}
+
+			else if (config.colosseumMetronome() && COLOSSEUM_REGIONS.contains(mapregion))
 			{
 				return true;
 			}

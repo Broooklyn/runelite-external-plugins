@@ -53,6 +53,7 @@ Configs can be individually disabled if you do not wish to enable Smart Metronom
 * Pyramid Plunder
 * Tithe Farm
 * Volcanic Mine
+* Colosseum
 
 ### Raids
 * Chambers of Xeric
