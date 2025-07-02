@@ -312,6 +312,10 @@ public class SmartMetronomePlugin extends Plugin
 		15263, 15262
 	);
 
+	private static final Set<Integer> TOMBS_OF_AMASCUT_REGIONS = ImmutableSet.of(
+		14160, 14162, 14164, 14672, 14674, 14676, 15186, 15188, 15698, 15700, 15184, 15696
+  );
+  
 	private static final Set<Integer> COLOSSEUM_REGIONS = ImmutableSet.of(
 		7216
 	);
@@ -629,6 +633,12 @@ public class SmartMetronomePlugin extends Plugin
 				return true;
 			}
 
+
+			else if (config.tombsMetronome() && TOMBS_OF_AMASCUT_REGIONS.contains(mapregion))
+			{
+				return true;
+			}
+      
 			else if (config.colosseumMetronome() && COLOSSEUM_REGIONS.contains(mapregion))
 			{
 				return true;
