@@ -314,6 +314,10 @@ public class SmartMetronomePlugin extends Plugin
 
 	private static final Set<Integer> TOMBS_OF_AMASCUT_REGIONS = ImmutableSet.of(
 		14160, 14162, 14164, 14672, 14674, 14676, 15186, 15188, 15698, 15700, 15184, 15696
+  );
+  
+	private static final Set<Integer> COLOSSEUM_REGIONS = ImmutableSet.of(
+		7216
 	);
 
 	// Slayer
@@ -339,7 +343,8 @@ public class SmartMetronomePlugin extends Plugin
 		6710, 6711, 6965, 6966, 6967, 6968, 7221, 7223, 7224, 7478, 7479, // Tithe Farm
 		15008, 15264, 15519, 15775, // Volcanic Mine
 		6205, 6461, 6717, // Wintertodt
-		8495, 8496, 8751, 8752, 9008, 9263, 9264, 9265 // Zulrah
+		8495, 8496, 8751, 8752, 9008, 9263, 9264, 9265, // Zulrah
+		6960, 6704, 6705, 6961, 7217, 7472, 7215, 6959, 6703 // Colosseum
 	);
 
 	public void setMetronome()
@@ -628,7 +633,13 @@ public class SmartMetronomePlugin extends Plugin
 				return true;
 			}
 
+
 			else if (config.tombsMetronome() && TOMBS_OF_AMASCUT_REGIONS.contains(mapregion))
+			{
+				return true;
+			}
+      
+			else if (config.colosseumMetronome() && COLOSSEUM_REGIONS.contains(mapregion))
 			{
 				return true;
 			}

@@ -406,6 +406,17 @@ public interface SmartMetronomeConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "colosseumMetronome",
+		name = "Colosseum",
+		description = ENABLES + "in the Colosseum",
+		section = minigamesSection
+	)
+	default boolean colosseumMetronome()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "fightCaveMetronome",
 		name = "Fight Cave",
 		description = ENABLES + "in the Tzhaar Fight Cave",
