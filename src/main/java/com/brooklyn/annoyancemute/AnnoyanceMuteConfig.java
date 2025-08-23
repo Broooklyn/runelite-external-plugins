@@ -98,6 +98,17 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "muteOthersHumidfy",
+		name = "Humidify (only others)",
+		description = "Mutes the sound of other players' humidify",
+		section = skillingSection
+	)
+	default boolean muteOthersHumidify()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 		keyName = "muteSnowballs",
 		name = "Snowballs",
 		description = "Mutes the sounds of snowballs being thrown",
