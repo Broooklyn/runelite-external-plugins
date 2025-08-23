@@ -424,6 +424,10 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			soundEffects.add(new GenericSoundEffect(SoundEffectID.HUMIDIFY_SOUND, SoundEffectType.EITHER));
 		}
+		else if (config.muteOthersHumidify())
+		{
+			soundEffects.add(new AnimationSoundEffect(SoundEffectID.HUMIDIFY_SOUND, SoundEffectType.EITHER, 6294));
+		}
 		if (config.mutePickpocket())
 		{
 			soundEffects.add(new GenericSoundEffect(SoundEffectID.PICKPOCKET_PLOP, SoundEffectType.EITHER));
