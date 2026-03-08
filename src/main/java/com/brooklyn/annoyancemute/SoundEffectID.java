@@ -40,6 +40,9 @@ public final class SoundEffectID
 	protected final static int VETION_JR_LEFT_FOOT_LETS_STOMP = 6985;
 	protected final static int NOON_FLAP_1 = 9929;
 	protected final static int NOON_FLAP_2 = 10002;
+	protected final static int BEEF_NOISE_1 = 11267;
+	protected final static int BEEF_NOISE_2 = 11268;
+
 
 	// Pet Thump
 	protected final static int PET_WALKING_THUMP = 3834;

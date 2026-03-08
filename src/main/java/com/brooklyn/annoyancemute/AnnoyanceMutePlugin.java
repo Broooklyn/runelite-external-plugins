@@ -344,6 +344,8 @@ public class AnnoyanceMutePlugin extends Plugin
 			soundEffects.add(new ActorCombatSoundEffect(SoundEffectID.VETION_JR_LEFT_FOOT_LETS_STOMP, SoundEffectType.EITHER, 0));
 			soundEffects.add(new ActorCombatSoundEffect(SoundEffectID.NOON_FLAP_1, SoundEffectType.EITHER, 0));
 			soundEffects.add(new ActorCombatSoundEffect(SoundEffectID.NOON_FLAP_2, SoundEffectType.EITHER, 0));
+			soundEffects.add(new ActorCombatSoundEffect(SoundEffectID.BEEF_NOISE_1, SoundEffectType.EITHER, 0));
+			soundEffects.add(new ActorCombatSoundEffect(SoundEffectID.BEEF_NOISE_2, SoundEffectType.EITHER, 0));
 		}
 		if (config.mutePetSounds() || config.muteRandoms())
 		{
