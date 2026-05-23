@@ -149,19 +149,7 @@ public class AnnoyanceMutePlugin extends Plugin
 	@Subscribe(priority = -2) // priority -2 to run after music plugin
 	public void onAmbientSoundEffectCreated(AmbientSoundEffectCreated ambientSoundEffectCreated)
 	{
-		// if nothing to mute then return
-		if (ambientSoundsToMute.isEmpty())
-		{
-			return;
-		}
-
-		List<SoundEffect> mutedAmbientsSameID = ambientSoundsToMute.stream().filter(mutedSounds -> mutedSounds.getId() == ambientSoundEffectCreated.getAmbientSoundEffect().getSoundEffectId()).collect(Collectors.toList());
-
-		// only mute sounds created that should be muted should call the muteAmbientSounds()
-		if (mutedAmbientsSameID.size() > 0)
-		{
-			muteAmbientSounds();
-		}
+		muteAmbientSounds();
 	}
 
 	@Subscribe(priority = -2) // priority -2 to run after music plugin
@@ -182,7 +170,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 	}
 
-	// Check the ambient sounds currently being played and remove the ones that should be mtued
+	// Check the ambient sounds currently being played and remove the ones that should be muted
 	private void muteAmbientSounds()
 	{
 		Deque<net.runelite.api.AmbientSoundEffect> ambientSoundEffects = client.getAmbientSoundEffects();
@@ -249,11 +237,26 @@ public class AnnoyanceMutePlugin extends Plugin
 		return ((double) totalSimilar / total > 0.75);
 	}
 
+	public boolean isInt(String num)
+	{
+		try {
+			Integer.parseInt(num);
+		} catch (NumberFormatException e) {
+			return false;
+		}
+		return true;
+	}
+
 	@VisibleForTesting
 	public void setUpMutes()
 	{
 		soundEffects = new HashSet<>();
 
+		boolean working = false;
+
+
+
+		// this
 		if (config.muteREEEE())
 		{
 			soundEffects.add(new GenericSoundEffect(SoundEffectID.ACB_REEEE, SoundEffectType.EITHER));
@@ -733,6 +736,13 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 	}
 
+	boolean isNumber(String num)
+	{
+		try {
+			Integer.parseInt(num);
+		}
+	}
+
 	@Subscribe
 	public void onAreaSoundEffectPlayed(AreaSoundEffectPlayed areaSoundEffectPlayed)
 	{
@@ -827,7 +837,7 @@ public class AnnoyanceMutePlugin extends Plugin
 			&& animationSoundEffects.stream().filter(AnimationSoundEffect.class::isInstance)
 			.map(AnimationSoundEffect.class::cast).anyMatch(s -> s.getAnimationID() == -1) ||
 			animationSoundEffects.stream().filter(AnimationSoundEffect.class::isInstance)
-			.map(AnimationSoundEffect.class::cast).noneMatch(s -> s.getAnimationID() == client.getLocalPlayer().getAnimation());
+				.map(AnimationSoundEffect.class::cast).noneMatch(s -> s.getAnimationID() == client.getLocalPlayer().getAnimation());
 	}
 
 	public List<String> getSelectedSounds()
