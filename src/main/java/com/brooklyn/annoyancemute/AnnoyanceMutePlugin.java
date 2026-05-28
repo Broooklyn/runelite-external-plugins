@@ -32,9 +32,11 @@ import com.brooklyn.annoyancemute.soundeffects.GenericSoundEffect;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Provides;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -80,6 +82,8 @@ public class AnnoyanceMutePlugin extends Plugin
 	@Getter(AccessLevel.PUBLIC)
 	public HashSet<SoundEffect> ambientSoundsToMute = new HashSet<>();
 
+	ArrayList<net.runelite.api.AmbientSoundEffect> soundsToKeep;
+
 	@Provides
 	AnnoyanceMuteConfig provideConfig(ConfigManager configManager)
 	{
@@ -90,6 +94,7 @@ public class AnnoyanceMutePlugin extends Plugin
 	public void startUp()
 	{
 		setUpMutes();
+		soundsToKeep = new ArrayList<>();
 
 		clientThread.invoke(() ->
 		{
@@ -105,6 +110,7 @@ public class AnnoyanceMutePlugin extends Plugin
 	public void shutDown()
 	{
 		soundEffects.clear();
+		soundsToKeep = new ArrayList<>();
 
 		clientThread.invoke(() ->
 		{
@@ -133,6 +139,7 @@ public class AnnoyanceMutePlugin extends Plugin
 				case "muteRanges":
 				case "muteFortisColosseum":
 				case "muteStranglewoodHowls":
+					soundsToKeep = new ArrayList<>();
 					clientThread.invoke(() ->
 					{
 						// Reload the scene to reapply ambient sounds
@@ -149,19 +156,19 @@ public class AnnoyanceMutePlugin extends Plugin
 	@Subscribe(priority = -2) // priority -2 to run after music plugin
 	public void onAmbientSoundEffectCreated(AmbientSoundEffectCreated ambientSoundEffectCreated)
 	{
-		// if nothing to mute then return
-		if (ambientSoundsToMute.isEmpty())
-		{
-			return;
-		}
 
-		List<SoundEffect> mutedAmbientsSameID = ambientSoundsToMute.stream().filter(mutedSounds -> mutedSounds.getId() == ambientSoundEffectCreated.getAmbientSoundEffect().getSoundEffectId()).collect(Collectors.toList());
-
-		// only mute sounds created that should be muted should call the muteAmbientSounds()
-		if (mutedAmbientsSameID.size() > 0)
+		// some ambient sounds are created as -1, just remove them imo.
+		if (ambientSoundEffectCreated.getAmbientSoundEffect().getSoundEffectId() == -1)
 		{
-			muteAmbientSounds();
+			client.getAmbientSoundEffects().clear();
+
+			// add the sounds not black listed back in
+			for (net.runelite.api.AmbientSoundEffect ambientSoundEffect : soundsToKeep)
+			{
+				client.getAmbientSoundEffects().addLast(ambientSoundEffect);
+			}
 		}
+		muteAmbientSounds();
 	}
 
 	@Subscribe(priority = -2) // priority -2 to run after music plugin
@@ -178,15 +185,15 @@ public class AnnoyanceMutePlugin extends Plugin
 		// on map load mute ambient sounds
 		if (gameState == GameState.LOGGED_IN)
 		{
+			soundsToKeep = new ArrayList<>();
 			muteAmbientSounds();
 		}
 	}
 
-	// Check the ambient sounds currently being played and remove the ones that should be mtued
+	// Check the ambient sounds currently being played and remove the ones that should be muted
 	private void muteAmbientSounds()
 	{
 		Deque<net.runelite.api.AmbientSoundEffect> ambientSoundEffects = client.getAmbientSoundEffects();
-		ArrayList<net.runelite.api.AmbientSoundEffect> soundsToKeep = new ArrayList<>();
 
 		for (net.runelite.api.AmbientSoundEffect ambientSoundEffect : ambientSoundEffects)
 		{
@@ -216,7 +223,6 @@ public class AnnoyanceMutePlugin extends Plugin
 				soundsToKeep.add(ambientSoundEffect);
 			}
 		}
-
 		// clear the deque (mutes all sounds)
 		client.getAmbientSoundEffects().clear();
 
@@ -254,6 +260,7 @@ public class AnnoyanceMutePlugin extends Plugin
 	{
 		soundEffects = new HashSet<>();
 
+		// this
 		if (config.muteREEEE())
 		{
 			soundEffects.add(new GenericSoundEffect(SoundEffectID.ACB_REEEE, SoundEffectType.EITHER));
@@ -710,9 +717,9 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 		if (config.muteRanges())
 		{
-			ambientSoundsToMute.add(new GenericSoundEffect(SoundEffectID.RANGE_1, SoundEffectType.AMBIENT));
-			ambientSoundsToMute.add(new GenericSoundEffect(SoundEffectID.RANGE_2, SoundEffectType.AMBIENT));
-			ambientSoundsToMute.add(new GenericSoundEffect(SoundEffectID.COOKING_POT, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new AmbientSoundEffect(SoundEffectID.RANGE_1, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new AmbientSoundEffect(SoundEffectID.RANGE_2, SoundEffectType.AMBIENT));
+			ambientSoundsToMute.add(new AmbientSoundEffect(SoundEffectID.COOKING_POT, SoundEffectType.AMBIENT));
 		}
 		if (config.muteFortisColosseum())
 		{
@@ -827,7 +834,7 @@ public class AnnoyanceMutePlugin extends Plugin
 			&& animationSoundEffects.stream().filter(AnimationSoundEffect.class::isInstance)
 			.map(AnimationSoundEffect.class::cast).anyMatch(s -> s.getAnimationID() == -1) ||
 			animationSoundEffects.stream().filter(AnimationSoundEffect.class::isInstance)
-			.map(AnimationSoundEffect.class::cast).noneMatch(s -> s.getAnimationID() == client.getLocalPlayer().getAnimation());
+				.map(AnimationSoundEffect.class::cast).noneMatch(s -> s.getAnimationID() == client.getLocalPlayer().getAnimation());
 	}
 
 	public List<String> getSelectedSounds()
