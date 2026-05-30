@@ -156,7 +156,8 @@ public class AnnoyanceMutePlugin extends Plugin
 	@Subscribe(priority = -2) // priority -2 to run after music plugin
 	public void onAmbientSoundEffectCreated(AmbientSoundEffectCreated ambientSoundEffectCreated)
 	{
-
+		if (ambientSoundsToMute.isEmpty())
+			return;
 		// some ambient sounds are created as -1, just remove them imo.
 		if (ambientSoundEffectCreated.getAmbientSoundEffect().getSoundEffectId() == -1)
 		{
@@ -193,6 +194,8 @@ public class AnnoyanceMutePlugin extends Plugin
 	// Check the ambient sounds currently being played and remove the ones that should be muted
 	private void muteAmbientSounds()
 	{
+		if (ambientSoundsToMute.isEmpty())
+			return;
 		Deque<net.runelite.api.AmbientSoundEffect> ambientSoundEffects = client.getAmbientSoundEffects();
 
 		for (net.runelite.api.AmbientSoundEffect ambientSoundEffect : ambientSoundEffects)
@@ -218,7 +221,7 @@ public class AnnoyanceMutePlugin extends Plugin
 					muteSound = true;
 				}
 			}
-			if (!muteSound)
+			if (!muteSound)// && !soundsToKeep.contains(ambientSoundEffect))
 			{
 				soundsToKeep.add(ambientSoundEffect);
 			}
