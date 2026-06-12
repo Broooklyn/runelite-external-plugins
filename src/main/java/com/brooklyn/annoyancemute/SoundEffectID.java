@@ -77,6 +77,27 @@ public final class SoundEffectID
 	protected final static int SKELETON_THRALL_ATTACK = 2700;
 	protected final static int ZOMBIE_THRALL_ATTACK = 918;
 
+	// Imp thralls
+//	protected final static int IMP_RANGED_THRALL_SUMMON_1 = 5048;
+//	protected final static int IMP_RANGED_THRALL_SUMMON_2 = 5054;
+//	protected final static int IMP_RANGED_THRALL_SUMMON_3 = 11395;
+	protected final static int IMP_RANGED_THRALL_ATTACK_1 = 11398;
+	protected final static int IMP_RANGED_THRALL_ATTACK_2 = 11399;
+
+//	protected final static int IMP_MAGE_THRALL_SUMMON_1 = 5063;
+//	protected final static int IMP_MAGE_THRALL_SUMMON_2 = 11373;
+//	protected final static int IMP_MAGE_THRALL_SUMMON_3 = 11372;
+	protected final static int IMP_MAGE_THRALL_ATTACK_1 = 11375;
+	protected final static int IMP_MAGE_THRALL_ATTACK_2 = 11376;
+	protected final static int IMP_MAGE_THRALL_ATTACK_3 = 11377;
+
+//	protected final static int IMP_MELEE_THRALL_SUMMON_1 = 5058;
+//	protected final static int IMP_MELEE_THRALL_SUMMON_2 = 5054;
+//	protected final static int IMP_MELEE_THRALL_SUMMON_3 = 11387;
+	protected final static int IMP_MELEE_THRALL_ATTACK_1 = 11379;
+	protected final static int IMP_MELEE_THRALL_ATTACK_2 = 11381;
+	protected final static int IMP_MELEE_THRALL_ATTACK_3 = 11382;
+
 	// Ice Spells
 	protected final static int ICE_BARRAGE_CAST = 168;
 	protected final static int ICE_BLITZ_CAST = 169;
