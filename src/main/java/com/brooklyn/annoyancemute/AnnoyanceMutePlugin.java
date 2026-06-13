@@ -286,6 +286,14 @@ public class AnnoyanceMutePlugin extends Plugin
 			soundEffects.add(new GenericSoundEffect(SoundEffectID.WATER_STRIKE_CAST, SoundEffectType.EITHER));
 			soundEffects.add(new GenericSoundEffect(SoundEffectID.WATER_STRIKE_LAND, SoundEffectType.EITHER));
 			soundEffects.add(new GenericSoundEffect(SoundEffectID.ZOMBIE_THRALL_ATTACK, SoundEffectType.EITHER));
+			soundEffects.add(new GenericSoundEffect(SoundEffectID.IMP_RANGED_THRALL_ATTACK_1, SoundEffectType.EITHER));
+			soundEffects.add(new GenericSoundEffect(SoundEffectID.IMP_RANGED_THRALL_ATTACK_2, SoundEffectType.EITHER));
+			soundEffects.add(new GenericSoundEffect(SoundEffectID.IMP_MAGE_THRALL_ATTACK_1, SoundEffectType.EITHER));
+			soundEffects.add(new GenericSoundEffect(SoundEffectID.IMP_MAGE_THRALL_ATTACK_2, SoundEffectType.EITHER));
+			soundEffects.add(new GenericSoundEffect(SoundEffectID.IMP_MAGE_THRALL_ATTACK_3, SoundEffectType.EITHER));
+			soundEffects.add(new GenericSoundEffect(SoundEffectID.IMP_MELEE_THRALL_ATTACK_1, SoundEffectType.EITHER));
+			soundEffects.add(new GenericSoundEffect(SoundEffectID.IMP_MELEE_THRALL_ATTACK_2, SoundEffectType.EITHER));
+			soundEffects.add(new GenericSoundEffect(SoundEffectID.IMP_MELEE_THRALL_ATTACK_3, SoundEffectType.EITHER));
 		}
 
 		// ------- NPCs -------
