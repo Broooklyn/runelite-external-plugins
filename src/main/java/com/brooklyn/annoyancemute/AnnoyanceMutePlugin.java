@@ -32,11 +32,9 @@ import com.brooklyn.annoyancemute.soundeffects.GenericSoundEffect;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Provides;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -169,7 +167,16 @@ public class AnnoyanceMutePlugin extends Plugin
 				client.getAmbientSoundEffects().addLast(ambientSoundEffect);
 			}
 		}
-		muteAmbientSounds();
+		if (ambientSoundsToMute.stream().anyMatch(s -> s.getId() ==  ambientSoundEffectCreated.getAmbientSoundEffect().getSoundEffectId()))
+		{
+			client.getAmbientSoundEffects().clear();
+
+			// add the sounds not black listed back in
+			for (net.runelite.api.AmbientSoundEffect ambientSoundEffect : soundsToKeep)
+			{
+				client.getAmbientSoundEffects().addLast(ambientSoundEffect);
+			}
+		}
 	}
 
 	@Subscribe(priority = -2) // priority -2 to run after music plugin

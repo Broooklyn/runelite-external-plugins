@@ -38,7 +38,6 @@ dependencies {
 }
 
 group = 'com.brooklyn'
-version = '1.9.2'
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
