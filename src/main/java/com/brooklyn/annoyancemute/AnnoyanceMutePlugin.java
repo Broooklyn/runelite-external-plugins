@@ -239,7 +239,20 @@ public class AnnoyanceMutePlugin extends Plugin
 		// add the sounds not black listed back in
 		for (net.runelite.api.AmbientSoundEffect ambientSoundEffect : soundsToKeep)
 		{
-			client.getAmbientSoundEffects().addLast(ambientSoundEffect);
+			boolean ignoreSound = false;
+
+			// ambient sounds with a -1 soundid with no other sounds with them can just be removed, it's probably a magic tree.
+			if (config.muteMagicTrees() && ambientSoundEffect.getSoundEffectId() == -1)
+			{
+				if (ambientSoundEffect.getBackgroundSoundEffectIds() == null || ambientSoundEffect.getBackgroundSoundEffectIds().length == 0)
+				{
+					ignoreSound = true;
+				}
+			}
+			if (!ignoreSound)
+			{
+				client.getAmbientSoundEffects().addLast(ambientSoundEffect);
+			}
 		}
 	}
 
