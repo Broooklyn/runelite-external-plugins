@@ -24,6 +24,7 @@
  */
 package com.brooklyn.currentworld;
 
+import net.runelite.client.config.Alpha;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
@@ -108,5 +109,30 @@ public interface CurrentWorldConfig extends Config
 	default Color pvpWorldColor()
 	{
 		return Color.RED;
+	}
+
+	@ConfigItem(
+		keyName = "overwriteBackground",
+		name = "Use own background",
+		description = "Overwrite default overlay background with your own",
+		position = 4,
+		section = colorSection
+	)
+	default boolean overwriteBackground()
+	{
+		return false;
+	}
+
+	@Alpha
+	@ConfigItem(
+		keyName = "backgroundColor",
+		name = "Background Color",
+		description = "The color of the background",
+		position = 5,
+		section = colorSection
+	)
+	default Color backgroundColor()
+	{
+		return Color.BLACK;
 	}
 }

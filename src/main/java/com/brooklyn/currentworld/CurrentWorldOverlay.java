@@ -107,6 +107,11 @@ public class CurrentWorldOverlay extends OverlayPanel
 				.build());
 		}
 
+		if (config.overwriteBackground())
+		{
+			panelComponent.setBackgroundColor(config.backgroundColor());
+		}
+
 		return super.render(graphics);
 	}
 
