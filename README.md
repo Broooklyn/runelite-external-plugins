@@ -123,5 +123,11 @@ Mutes the Rubber chicken, Stale baguette, etc. whack sound.
 #### Wilderness Obelisk
 Mutes the sound of the Wilderness Obelisk's teleport _EEEEEEE_.
 
+#### Ambient Sounds
+Use Visual Sounds plugin to identify the Ambient Sounds. 
+Use World Location plugin to identify region (if you want to use region base ambient muting)
+
+Format for Regional muting is "101:123" meaning in region 101, mute soundid 123.
+
 ***
 If you have any suggestions for other sounds to mute, open an issue above.

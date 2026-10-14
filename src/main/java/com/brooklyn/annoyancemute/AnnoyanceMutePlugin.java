@@ -33,6 +33,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Provides;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,9 +47,11 @@ import net.runelite.api.Deque;
 import net.runelite.api.GameState;
 import net.runelite.api.Player;
 import net.runelite.api.Varbits;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AmbientSoundEffectCreated;
 import net.runelite.api.events.AreaSoundEffectPlayed;
 import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.GameTick;
 import net.runelite.api.events.SoundEffectPlayed;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
@@ -82,6 +85,8 @@ public class AnnoyanceMutePlugin extends Plugin
 
 	ArrayList<net.runelite.api.AmbientSoundEffect> soundsToKeep;
 
+	int currentPlayerRegionId = -1;
+
 	@Provides
 	AnnoyanceMuteConfig provideConfig(ConfigManager configManager)
 	{
@@ -93,7 +98,6 @@ public class AnnoyanceMutePlugin extends Plugin
 	{
 		setUpMutes();
 		soundsToKeep = new ArrayList<>();
-
 		clientThread.invoke(() ->
 		{
 			// Reload the scene to reapply ambient sounds
@@ -109,7 +113,6 @@ public class AnnoyanceMutePlugin extends Plugin
 	{
 		soundEffects.clear();
 		soundsToKeep = new ArrayList<>();
-
 		clientThread.invoke(() ->
 		{
 			// Reload the scene to reapply ambient sounds
@@ -167,7 +170,7 @@ public class AnnoyanceMutePlugin extends Plugin
 				client.getAmbientSoundEffects().addLast(ambientSoundEffect);
 			}
 		}
-		if (ambientSoundsToMute.stream().anyMatch(s -> s.getId() ==  ambientSoundEffectCreated.getAmbientSoundEffect().getSoundEffectId()))
+		if (ambientSoundsToMute.stream().anyMatch(s -> s.getId() == ambientSoundEffectCreated.getAmbientSoundEffect().getSoundEffectId()))
 		{
 			client.getAmbientSoundEffects().clear();
 
@@ -194,7 +197,31 @@ public class AnnoyanceMutePlugin extends Plugin
 		if (gameState == GameState.LOGGED_IN)
 		{
 			soundsToKeep = new ArrayList<>();
+			Player localPlayer = client.getLocalPlayer();
+			if (localPlayer != null)
+			{
+				WorldPoint wp =localPlayer.getWorldLocation();
+				currentPlayerRegionId = wp.getRegionID();
+			}
 			muteAmbientSounds();
+		}
+	}
+
+	@Subscribe
+	public void onGameTick(GameTick e)
+	{
+		// on first login and on region changes we can mute the ambient sounds that are region based
+		// this function might not be necessary tbh
+		Player localPlayer = client.getLocalPlayer();
+		if (localPlayer != null)
+		{
+			WorldPoint wp = localPlayer.getWorldLocation();
+			if (wp.getRegionID() != currentPlayerRegionId)
+			{
+				soundsToKeep = new ArrayList<>();
+				currentPlayerRegionId = wp.getRegionID();
+				muteAmbientSounds();
+			}
 		}
 	}
 
@@ -215,20 +242,31 @@ public class AnnoyanceMutePlugin extends Plugin
 				int[] backgroundSounds = ambientSoundEffect.getBackgroundSoundEffectIds();
 				int[] backgroundSoundsToMute = mutedAmbientsSameID.get(i).getBackgroundSoundEffects();
 
-				if (backgroundSounds == null && backgroundSoundsToMute.length == 0)
+				// mute if id is the same and there is no background sounds
+				if (backgroundSoundsToMute.length == 0)
 				{
 					muteSound = true;
 				}
-				if (backgroundSounds != null && backgroundSoundsToMute.length == 0)
-				{
-					muteSound = true;
-				}
+
+				// mute only if the background sounds are similar to a selection
 				if (backgroundSounds != null && backgroundSoundsToMute.length != 0 && arraysLikeEnough(backgroundSounds, backgroundSoundsToMute))
 				{
 					muteSound = true;
 				}
+
+				// if ambient sound is configured with a regionid
+				int regionId = mutedAmbientsSameID.get(i).getRegionId();
+				if (muteSound && regionId != -1)
+				{
+					// if current player region is not the same location as the defined regionid, don't mute the sound
+					if (currentPlayerRegionId != regionId)
+					{
+						muteSound = false;
+						break;
+					}
+				}
 			}
-			if (!muteSound)// && !soundsToKeep.contains(ambientSoundEffect))
+			if (!muteSound)
 			{
 				soundsToKeep.add(ambientSoundEffect);
 			}
@@ -765,10 +803,18 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 
 		// add the user defined ambient sounds to mute to the list manually
-		for (int i : getSelectedAmbientSounds())
+		for (int i : getGenericAmbientSounds())
 		{
 			ambientSoundsToMute.add(new AmbientSoundEffect(i, SoundEffectType.AMBIENT));
 		}
+
+		getRegionalAmbientSounds().forEach(entry -> {
+			String[] e = entry.split(":");
+			int regionId = Integer.parseInt(e[0]);
+			int soundId = Integer.parseInt(e[1]);
+
+			ambientSoundsToMute.add(new AmbientSoundEffect(soundId, SoundEffectType.AMBIENT, regionId));
+		});
 	}
 
 	@Subscribe
@@ -880,7 +926,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		return Text.fromCSV(configSounds);
 	}
 
-	public List<Integer> getSelectedAmbientSounds()
+	public List<Integer> getGenericAmbientSounds()
 	{
 		final String configSounds = config.ambientSoundsToMute().toLowerCase();
 
@@ -892,6 +938,30 @@ public class AnnoyanceMutePlugin extends Plugin
 			if (tryParseInt(str))
 			{
 				returnValues.add(Integer.parseInt(str));
+			}
+		}
+
+		return returnValues;
+	}
+
+	public List<String> getRegionalAmbientSounds()
+	{
+		final String configSounds = config.ambientSoundsToMuteRegional().toLowerCase();
+
+		List<String> configValue = Text.fromCSV(configSounds);
+
+		ArrayList<String> returnValues = new ArrayList<>();
+		for (String str : configValue)
+		{
+			if (str.contains(":"))
+			{
+				String regionid = str.split(":")[0];
+				String soundid = str.split(":")[1];
+
+				if (tryParseInt(regionid) && tryParseInt(soundid))
+				{
+					returnValues.add(Integer.parseInt(regionid) + ":" + Integer.parseInt(soundid));
+				}
 			}
 		}
 

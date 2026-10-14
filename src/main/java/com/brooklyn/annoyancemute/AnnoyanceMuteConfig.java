@@ -1061,4 +1061,15 @@ public interface AnnoyanceMuteConfig extends Config
 	{
 		return "";
 	}
+
+	@ConfigItem(
+		keyName = "ambientSoundsToMuteRegional",
+		name = "Regional Muted Ambient Sounds",
+		description = "Enter IDs of the ambient sounds you wish to mute within a region in the format of regionid:soundid",
+		position = 32
+	)
+	default String ambientSoundsToMuteRegional()
+	{
+		return "";
+	}
 }
