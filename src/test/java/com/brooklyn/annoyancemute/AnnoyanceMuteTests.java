@@ -46,6 +46,7 @@ public class AnnoyanceMuteTests
 
 		when(config.soundsToMute()).thenReturn("");
 		when(config.ambientSoundsToMute()).thenReturn("");
+		when(config.ambientSoundsToMuteRegional()).thenReturn("");
 	}
 
 	@Test
