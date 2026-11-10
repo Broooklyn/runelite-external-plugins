@@ -783,7 +783,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.DEADEYE);
 		}
-		if (config.muteDeadeye())
+		if (config.muteZeal())
 		{
 			addGeneric(SoundEffectID.ZEAL);
 		}
