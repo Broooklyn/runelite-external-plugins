@@ -125,9 +125,6 @@ public class AnnoyanceMutePlugin extends Plugin
 	// Ids (AmbientSoundID) of the location based ambient sounds, set by the server, that get muted whole
 	private Set<Integer> newAmbientSoundsToMute = new HashSet<>();
 
-	// Only the ids the user entered in the ambient sound config, these can mute the whole ambient sound (composition)
-	private List<AmbientSoundEffect> customAmbientSoundsToMute = new ArrayList<>();
-
 	private final List<net.runelite.api.AmbientSoundEffect> soundsToKeep = new ArrayList<>();
 
 	// What the server set ambient sound looked like before "Muted Sounds" ids were taken out of it
@@ -180,15 +177,10 @@ public class AnnoyanceMutePlugin extends Plugin
 					reloadScene();
 					break;
 				case "soundsToMute":
-					// put the server set ambient sound back together, then take out the new selection
+					// put the removed ambient sounds back, then take out the new selection
 					clientThread.invoke(() ->
 					{
 						restoreAmbientSoundRandomSounds();
-						AmbientSoundComposition ambientSound = client.getAmbientSound();
-						if (ambientSound != null)
-						{
-							client.setAmbientSound(ambientSound);
-						}
 						muteAmbientSounds();
 					});
 					break;
@@ -469,47 +461,6 @@ public class AnnoyanceMutePlugin extends Plugin
 			list.addAll(original);
 		});
 		originalRandomSoundLists.clear();
-	}
-
-	private boolean isAmbientSoundMuted(AmbientSoundComposition ambientSound)
-	{
-		if (isAnyAmbientSoundIdMuted(ambientSound.getSoundEffectIds()))
-		{
-			return true;
-		}
-
-		List<RandomSound> randomSounds = ambientSound.getRandomSounds();
-		if (randomSounds != null)
-		{
-			for (RandomSound randomSound : randomSounds)
-			{
-				if (isAnyAmbientSoundIdMuted(randomSound.getSoundEffectIds()))
-				{
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	// Only the ids the user entered count, the built in toggles are meant for ambient sound effects and share ids
-	// with sounds that are part of other areas
-	private boolean isAnyAmbientSoundIdMuted(@Nullable int[] ids)
-	{
-		if (ids == null)
-		{
-			return false;
-		}
-
-		for (AmbientSoundEffect muted : customAmbientSoundsToMute)
-		{
-			if ((muted.getRegionId() == -1 || muted.getRegionId() == currentPlayerRegionId)
-				&& Arrays.stream(ids).anyMatch(id -> id == muted.getId()))
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 
 	// Clear the game's ambient sounds (mutes all of them), then add back the ones that are not black listed
@@ -939,12 +890,9 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 
 		// add the user defined ambient sounds to mute to the list manually
-		customAmbientSoundsToMute = new ArrayList<>();
 		for (int i : getGenericAmbientSounds())
 		{
-			AmbientSoundEffect custom = new AmbientSoundEffect(i, SoundEffectType.AMBIENT);
-			ambientSoundsToMute.add(custom);
-			customAmbientSoundsToMute.add(custom);
+			ambientSoundsToMute.add(new AmbientSoundEffect(i, SoundEffectType.AMBIENT));
 		}
 
 		getRegionalAmbientSounds().forEach(entry -> {
@@ -952,9 +900,7 @@ public class AnnoyanceMutePlugin extends Plugin
 			int regionId = Integer.parseInt(e[0]);
 			int soundId = Integer.parseInt(e[1]);
 
-			AmbientSoundEffect custom = new AmbientSoundEffect(soundId, SoundEffectType.AMBIENT, regionId);
-			ambientSoundsToMute.add(custom);
-			customAmbientSoundsToMute.add(custom);
+			ambientSoundsToMute.add(new AmbientSoundEffect(soundId, SoundEffectType.AMBIENT, regionId));
 		});
 
 		newAmbientSoundsToMute = new HashSet<>();
