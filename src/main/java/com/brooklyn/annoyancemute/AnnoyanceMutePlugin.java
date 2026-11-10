@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -129,6 +130,10 @@ public class AnnoyanceMutePlugin extends Plugin
 
 	private final List<net.runelite.api.AmbientSoundEffect> soundsToKeep = new ArrayList<>();
 
+	// What the server set ambient sound looked like before "Muted Sounds" ids were taken out of it
+	private final Map<RandomSound, int[]> originalRandomSoundIds = new IdentityHashMap<>();
+	private final Map<List<RandomSound>, List<RandomSound>> originalRandomSoundLists = new IdentityHashMap<>();
+
 	int currentPlayerRegionId = -1;
 
 	@Provides
@@ -149,6 +154,7 @@ public class AnnoyanceMutePlugin extends Plugin
 	{
 		soundEffects.clear();
 		soundEffectsById.clear();
+		clientThread.invoke(this::restoreAmbientSoundRandomSounds);
 		reloadScene();
 	}
 
@@ -172,6 +178,19 @@ public class AnnoyanceMutePlugin extends Plugin
 				case "ambientSoundsToMute":
 				case "ambientSoundsToMuteRegional":
 					reloadScene();
+					break;
+				case "soundsToMute":
+					// put the server set ambient sound back together, then take out the new selection
+					clientThread.invoke(() ->
+					{
+						restoreAmbientSoundRandomSounds();
+						AmbientSoundComposition ambientSound = client.getAmbientSound();
+						if (ambientSound != null)
+						{
+							client.setAmbientSound(ambientSound);
+						}
+						muteAmbientSounds();
+					});
 					break;
 				default:
 					if (configChanged.getKey().startsWith("muteNewAmbient"))
@@ -199,10 +218,14 @@ public class AnnoyanceMutePlugin extends Plugin
 	public void onAmbientSoundEffectCreated(AmbientSoundEffectCreated ambientSoundEffectCreated)
 	{
 		WorldView worldView = ambientSoundEffectCreated.getWorldView();
-		if (hasNoAmbientMutes() || !worldView.isTopLevel())
+		if (!worldView.isTopLevel())
 			return;
 
 		net.runelite.api.AmbientSoundEffect created = ambientSoundEffectCreated.getAmbientSoundEffect();
+		removeSelectedSounds(created.getRandomSound());
+
+		if (hasNoAmbientMutes())
+			return;
 
 		// some ambient sounds are created as -1 with no random sounds, just remove them imo.
 		int soundId = created.getSoundEffectId();
@@ -236,12 +259,6 @@ public class AnnoyanceMutePlugin extends Plugin
 	@Subscribe(priority = -2) // priority -2 to run after music plugin
 	public void onGameStateChanged(GameStateChanged gameStateChanged)
 	{
-		// if nothing to mute then return
-		if (hasNoAmbientMutes())
-		{
-			return;
-		}
-
 		GameState gameState = gameStateChanged.getGameState();
 
 		// on map load mute ambient sounds
@@ -278,9 +295,29 @@ public class AnnoyanceMutePlugin extends Plugin
 	// ambient sound effects and the ambient sound the server set, if there is one
 	private void muteAmbientSounds()
 	{
-		if (hasNoAmbientMutes())
-			return;
+		if (!hasNoAmbientMutes() || !selectedSounds.isEmpty())
+		{
+			muteAmbientSoundEffects();
+		}
 
+		AmbientSoundComposition ambientSound = client.getAmbientSound();
+		if (ambientSound == null)
+		{
+			return;
+		}
+
+		// the whole ambient sound goes if it is one of the selected new (location based) ambient sounds
+		if (newAmbientSoundsToMute.contains(ambientSound.getId()))
+		{
+			client.setAmbientSound(null);
+			return;
+		}
+
+		removeSelectedSoundsFromAmbientSound(ambientSound);
+	}
+
+	private void muteAmbientSoundEffects()
+	{
 		soundsToKeep.clear();
 		Deque<net.runelite.api.AmbientSoundEffect> ambientSoundEffects = client.getAmbientSoundEffects();
 
@@ -320,6 +357,8 @@ public class AnnoyanceMutePlugin extends Plugin
 			}
 			if (!muteSound)
 			{
+				// keep the effect, but take the "Muted Sounds" ids out of its random sounds
+				removeSelectedSounds(ambientSoundEffect.getRandomSound());
 				soundsToKeep.add(ambientSoundEffect);
 			}
 		}
@@ -332,19 +371,104 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 
 		restoreSoundsToKeep();
+	}
 
-		AmbientSoundComposition ambientSound = client.getAmbientSound();
-		if (ambientSound == null)
+	// Take the sounds listed in the "Muted Sounds" config out of the ambient sound the server set.
+	// The client only accepts its own AmbientSoundComposition in setAmbientSound (it casts it), so a new
+	// composition can't be made; the random sounds are edited in place and the edited composition is set again.
+	private void removeSelectedSoundsFromAmbientSound(AmbientSoundComposition ambientSound)
+	{
+		if (selectedSounds.isEmpty())
 		{
 			return;
 		}
 
-		// the whole ambient sound goes if it is one of the selected new (location based) ambient sounds
-		if (newAmbientSoundsToMute.contains(ambientSound.getId()))
+		// the looping sounds can't be removed from the composition, so the whole ambient sound has to go
+		if (anySelected(ambientSound.getSoundEffectIds()))
 		{
 			client.setAmbientSound(null);
 			return;
 		}
+
+		List<RandomSound> randomSounds = ambientSound.getRandomSounds();
+		if (randomSounds == null || randomSounds.isEmpty())
+		{
+			return;
+		}
+
+		boolean changed = false;
+		List<RandomSound> emptied = new ArrayList<>();
+		for (RandomSound randomSound : randomSounds)
+		{
+			int[] ids = randomSound.getSoundEffectIds();
+			if (!anySelected(ids))
+			{
+				continue;
+			}
+
+			int[] remaining = Arrays.stream(ids).filter(id -> !selectedSounds.contains(Integer.toString(id))).toArray();
+			if (remaining.length == 0)
+			{
+				emptied.add(randomSound);
+				continue;
+			}
+			// compositions are cached by the client, remember the original ids so they can be put back
+			originalRandomSoundIds.putIfAbsent(randomSound, ids);
+			randomSound.setSoundEffectIds(remaining);
+			changed = true;
+		}
+
+		// a random sound with no ids left can't play anything, take it out of the composition
+		if (!emptied.isEmpty())
+		{
+			originalRandomSoundLists.putIfAbsent(randomSounds, new ArrayList<>(randomSounds));
+			randomSounds.removeAll(emptied);
+			changed = true;
+		}
+
+		if (changed)
+		{
+			client.setAmbientSound(ambientSound);
+		}
+	}
+
+	// Take the "Muted Sounds" ids out of an ambient sound effect's random sound, the looping sound keeps playing.
+	// When nothing is left the ids are set to null, the client skips a null random sound but would crash on an empty one.
+	private void removeSelectedSounds(@Nullable RandomSound randomSound)
+	{
+		if (randomSound == null || selectedSounds.isEmpty())
+		{
+			return;
+		}
+
+		int[] ids = randomSound.getSoundEffectIds();
+		if (!anySelected(ids))
+		{
+			return;
+		}
+
+		int[] remaining = Arrays.stream(ids).filter(id -> !selectedSounds.contains(Integer.toString(id))).toArray();
+		// random sounds can be shared and cached by the client, remember the original ids so they can be put back
+		originalRandomSoundIds.putIfAbsent(randomSound, ids);
+		randomSound.setSoundEffectIds(remaining.length == 0 ? null : remaining);
+	}
+
+	private boolean anySelected(@Nullable int[] ids)
+	{
+		return ids != null && Arrays.stream(ids).anyMatch(id -> selectedSounds.contains(Integer.toString(id)));
+	}
+
+	// Put back the random sounds removed by removeSelectedSoundsFromAmbientSound
+	private void restoreAmbientSoundRandomSounds()
+	{
+		originalRandomSoundIds.forEach(RandomSound::setSoundEffectIds);
+		originalRandomSoundIds.clear();
+		originalRandomSoundLists.forEach((list, original) ->
+		{
+			list.clear();
+			list.addAll(original);
+		});
+		originalRandomSoundLists.clear();
 	}
 
 	private boolean isAmbientSoundMuted(AmbientSoundComposition ambientSound)
