@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
+import net.runelite.api.NPCComposition;
 import net.runelite.api.Player;
 import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.events.ConfigChanged;
@@ -76,7 +77,7 @@ public class AnnoyanceMuteTests
 	}
 
 	@Test
-	public void muteNoonPet()
+	public void muteFollowerSounds()
 	{
 		when(config.mutePetSounds()).thenReturn(true);
 
@@ -85,28 +86,39 @@ public class AnnoyanceMuteTests
 		configChanged.setKey("annoyancemute");
 		plugin.onConfigChanged(configChanged);
 
-		NPC noonpet = mock(NPC.class);
-		when(noonpet.getCombatLevel()).thenReturn(0);
+		NPCComposition followerComposition = mock(NPCComposition.class);
+		when(followerComposition.isFollower()).thenReturn(true);
+		NPC follower = mock(NPC.class);
+		when(follower.getComposition()).thenReturn(followerComposition);
 
-		assertTrue(plugin.shouldMute(SoundEffectID.NOON_FLAP_1, SoundEffectType.EITHER, noonpet));
-		assertTrue(plugin.shouldMute(SoundEffectID.NOON_FLAP_2, SoundEffectType.EITHER, noonpet));
+		NPCComposition otherComposition = mock(NPCComposition.class);
+		when(otherComposition.isFollower()).thenReturn(false);
+		NPC other = mock(NPC.class);
+		when(other.getComposition()).thenReturn(otherComposition);
+
+		// a sound that is not on any list is still muted when a pet makes it
+		int unlistedSound = 1;
+		assertTrue(plugin.shouldMute(unlistedSound, SoundEffectType.EITHER, follower));
+		assertFalse(plugin.shouldMute(unlistedSound, SoundEffectType.EITHER, other));
+		assertFalse(plugin.shouldMute(unlistedSound, SoundEffectType.EITHER, null));
 	}
 
 	@Test
-	public void muteNoon()
+	public void keepFollowerSoundsWhenPetsNotMuted()
 	{
-		when(config.mutePetSounds()).thenReturn(true);
+		when(config.mutePetSounds()).thenReturn(false);
 
 		ConfigChanged configChanged = new ConfigChanged();
 		configChanged.setGroup("annoyancemute");
 		configChanged.setKey("annoyancemute");
 		plugin.onConfigChanged(configChanged);
 
-		NPC noon = mock(NPC.class);
-		when(noon.getCombatLevel()).thenReturn(222);
+		NPCComposition followerComposition = mock(NPCComposition.class);
+		when(followerComposition.isFollower()).thenReturn(true);
+		NPC follower = mock(NPC.class);
+		when(follower.getComposition()).thenReturn(followerComposition);
 
-		assertFalse(plugin.shouldMute(SoundEffectID.NOON_FLAP_1, SoundEffectType.EITHER, noon));
-		assertFalse(plugin.shouldMute(SoundEffectID.NOON_FLAP_2, SoundEffectType.EITHER, noon));
+		assertFalse(plugin.shouldMute(1, SoundEffectType.EITHER, follower));
 	}
 
 	@Test

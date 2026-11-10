@@ -49,6 +49,8 @@ import net.runelite.api.AmbientSoundComposition;
 import net.runelite.api.Client;
 import net.runelite.api.Deque;
 import net.runelite.api.GameState;
+import net.runelite.api.NPC;
+import net.runelite.api.NPCComposition;
 import net.runelite.api.Player;
 import net.runelite.api.RandomSound;
 import net.runelite.api.Varbits;
@@ -112,6 +114,9 @@ public class AnnoyanceMutePlugin extends Plugin
 
 	// The same effects as soundEffects, grouped by sound id so a sound can be checked with one lookup
 	private Map<Integer, List<SoundEffect>> soundEffectsById = new HashMap<>();
+
+	// Whether every sound made by a follower (a pet) is muted, cached from the config on each change
+	private boolean mutePetFollowers;
 
 	// The user's custom "sounds to mute" list, parsed once per config change
 	private Set<String> selectedSounds = Collections.emptySet();
@@ -500,6 +505,7 @@ public class AnnoyanceMutePlugin extends Plugin
 	public void setUpMutes()
 	{
 		soundEffects = new HashSet<>();
+		mutePetFollowers = config.mutePetSounds();
 
 		// this
 		if (config.muteREEEE())
@@ -561,15 +567,18 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.NIGHTMARE_SOUND);
 		}
-		if (config.mutePetSounds())
-		{
-			addActorCombat(0, SoundEffectID.SNAKELING_METAMORPHOSIS, SoundEffectID.CLOCKWORK_CAT_CLICK_CLICK,
-				SoundEffectID.PET_KREEARRA_WING_FLAP, SoundEffectID.ELECTRIC_HYDRA_IN, SoundEffectID.ELECTRIC_HYDRA_OUT,
-				SoundEffectID.IKKLE_HYDRA_RIGHT_FOOT_LETS_STOMP, SoundEffectID.IKKLE_HYDRA_LEFT_FOOT_LETS_STOMP,
-				SoundEffectID.PET_WALKING_THUMP, SoundEffectID.VETION_JR_RIGHT_FOOT_LETS_STOMP,
-				SoundEffectID.VETION_JR_LEFT_FOOT_LETS_STOMP, SoundEffectID.NOON_FLAP_1, SoundEffectID.NOON_FLAP_2,
-				SoundEffectID.BEEF_NOISE_1, SoundEffectID.BEEF_NOISE_2, SoundEffectID.GULLIVER_EMOTE_1, SoundEffectID.GULLIVER_EMOTE_2);
-		}
+		// this section is probably not needed anymore as we mute based on being isFollowing()
+		// TODO remove this and other combat level based muting, probably
+//		if (config.mutePetSounds())
+//		{
+//			addActorCombat(0, SoundEffectID.SNAKELING_METAMORPHOSIS, SoundEffectID.CLOCKWORK_CAT_CLICK_CLICK,
+//				SoundEffectID.PET_KREEARRA_WING_FLAP, SoundEffectID.ELECTRIC_HYDRA_IN, SoundEffectID.ELECTRIC_HYDRA_OUT,
+//				SoundEffectID.IKKLE_HYDRA_RIGHT_FOOT_LETS_STOMP, SoundEffectID.IKKLE_HYDRA_LEFT_FOOT_LETS_STOMP,
+//				SoundEffectID.PET_WALKING_THUMP, SoundEffectID.VETION_JR_RIGHT_FOOT_LETS_STOMP,
+//				SoundEffectID.VETION_JR_LEFT_FOOT_LETS_STOMP, SoundEffectID.NOON_FLAP_1, SoundEffectID.NOON_FLAP_2,
+//				SoundEffectID.BEEF_NOISE_1, SoundEffectID.BEEF_NOISE_2, SoundEffectID.GULLIVER_EMOTE_1, SoundEffectID.GULLIVER_EMOTE_2);
+//			addActorCombat(0, SoundEffectID.MAGGOT_KING_PET_EMOTES);
+//		}
 		if (config.mutePetSounds() || config.muteRandoms())
 		{
 			addGeneric(SoundEffectID.CAT_HISS);
@@ -1105,6 +1114,12 @@ public class AnnoyanceMutePlugin extends Plugin
 			return true;
 		}
 
+		// everything a pet makes goes, no matter which sound it is
+		if (mutePetFollowers && isFollower(source))
+		{
+			return true;
+		}
+
 		List<SoundEffect> candidates = soundEffectsById.get(soundId);
 		if (candidates == null)
 		{
@@ -1143,6 +1158,17 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 		return hasGeneric && hasActor && animationSoundEffects.stream().anyMatch(s -> s.getAnimationID() == -1)
 			|| animationSoundEffects.stream().noneMatch(s -> s.getAnimationID() == client.getLocalPlayer().getAnimation());
+	}
+
+	private static boolean isFollower(@Nullable Actor actor)
+	{
+		if (!(actor instanceof NPC))
+		{
+			return false;
+		}
+
+		NPCComposition composition = ((NPC) actor).getComposition();
+		return composition != null && composition.isFollower();
 	}
 
 	public List<String> getSelectedSounds()

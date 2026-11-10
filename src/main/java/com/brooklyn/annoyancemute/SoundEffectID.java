@@ -29,6 +29,8 @@ public final class SoundEffectID
 {
 	// Pet sounds
 	protected final static int CAT_HISS = net.runelite.api.gameval.SoundEffectID.CAT_ATTACK;
+
+	// TODO remove the following sounds as they're not used, probably
 	protected final static int SNAKELING_METAMORPHOSIS = net.runelite.api.gameval.SoundEffectID.SEASNAKE_ATTACK;
 	protected final static int CLOCKWORK_CAT_CLICK_CLICK = net.runelite.api.gameval.SoundEffectID.POH_CLOCKWORK;
 	protected final static int PET_KREEARRA_WING_FLAP = net.runelite.api.gameval.SoundEffectID.GODWARS_ARMADYL_WINGS;
@@ -44,7 +46,21 @@ public final class SoundEffectID
 	protected final static int BEEF_NOISE_2 = net.runelite.api.gameval.SoundEffectID.CB_NOSTRILS_FLARE_01;
 	protected final static int GULLIVER_EMOTE_1 = net.runelite.api.gameval.SoundEffectID.SAILING_BOSS_GRYPHON_MELEE_HIT_01;
 	protected final static int GULLIVER_EMOTE_2 = net.runelite.api.gameval.SoundEffectID.SAILING_BOSS_GRYPHON_SCREAM_01;
-
+	// Maggot King pet emotes, the pet reuses the boss's sounds
+	protected final static int[] MAGGOT_KING_PET_EMOTES = {
+		net.runelite.api.gameval.SoundEffectID.MYQ6_MAGGOT_KING_SCREECH_01,
+		net.runelite.api.gameval.SoundEffectID.MYQ6_MAGGOT_KING_SCREECH_CHARGE_01,
+		net.runelite.api.gameval.SoundEffectID.MYQ6_MAGGOT_KING_SCREECH_WIND_01,
+		net.runelite.api.gameval.SoundEffectID.MYQ6_MAGGOT_KING_SCREECH_WIND_02,
+		net.runelite.api.gameval.SoundEffectID.MYQ6_MAGGOT_KING_SCREECH_WIND_03,
+		net.runelite.api.gameval.SoundEffectID.MYQ6_MAGGOT_KING_SCREECH_WIND_04,
+		net.runelite.api.gameval.SoundEffectID.MYQ6_MAGGOT_KING_MELEE_ATTACK_01,
+		net.runelite.api.gameval.SoundEffectID.MYQ6_MAGGOT_KING_MELEE_ATTACK_02,
+		net.runelite.api.gameval.SoundEffectID.MYQ6_MAGGOT_KING_MELEE_ATTACK_03,
+		net.runelite.api.gameval.SoundEffectID.MYQ6_MAGGOT_KING_MELEE_ATTACK_04,
+		net.runelite.api.gameval.SoundEffectID.MYQ6_MAGGOT_KING_MELEE_ATTACK_05,
+		net.runelite.api.gameval.SoundEffectID.MYQ6_MAGGOT_KING_MELEE_ATTACK_06
+	};
 
 	// Pet Thump
 	protected final static int PET_WALKING_THUMP = net.runelite.api.gameval.SoundEffectID.GODWARS_AVATAR_FOOTSTEPS;
