@@ -55,6 +55,7 @@ import net.runelite.api.WorldView;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AmbientSoundChanged;
 import net.runelite.api.events.AmbientSoundEffectCreated;
+import net.runelite.api.gameval.AmbientSoundID;
 import net.runelite.api.events.AreaSoundEffectPlayed;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
@@ -120,6 +121,9 @@ public class AnnoyanceMutePlugin extends Plugin
 	// The same effects as ambientSoundsToMute, grouped by sound id
 	private Map<Integer, List<AmbientSoundEffect>> ambientSoundsToMuteById = new HashMap<>();
 
+	// Ids (AmbientSoundID) of the location based ambient sounds, set by the server, that get muted whole
+	private Set<Integer> newAmbientSoundsToMute = new HashSet<>();
+
 	// Only the ids the user entered in the ambient sound config, these can mute the whole ambient sound (composition)
 	private List<AmbientSoundEffect> customAmbientSoundsToMute = new ArrayList<>();
 
@@ -168,6 +172,12 @@ public class AnnoyanceMutePlugin extends Plugin
 				case "ambientSoundsToMute":
 				case "ambientSoundsToMuteRegional":
 					reloadScene();
+					break;
+				default:
+					if (configChanged.getKey().startsWith("muteNewAmbient"))
+					{
+						reloadScene();
+					}
 			}
 		}
 	}
@@ -213,7 +223,7 @@ public class AnnoyanceMutePlugin extends Plugin
 
 	private boolean hasNoAmbientMutes()
 	{
-		return ambientSoundsToMute.isEmpty();
+		return ambientSoundsToMute.isEmpty() && newAmbientSoundsToMute.isEmpty();
 	}
 
 	@Nullable
@@ -322,6 +332,19 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 
 		restoreSoundsToKeep();
+
+		AmbientSoundComposition ambientSound = client.getAmbientSound();
+		if (ambientSound == null)
+		{
+			return;
+		}
+
+		// the whole ambient sound goes if it is one of the selected new (location based) ambient sounds
+		if (newAmbientSoundsToMute.contains(ambientSound.getId()))
+		{
+			client.setAmbientSound(null);
+			return;
+		}
 	}
 
 	private boolean isAmbientSoundMuted(AmbientSoundComposition ambientSound)
@@ -809,6 +832,92 @@ public class AnnoyanceMutePlugin extends Plugin
 			ambientSoundsToMute.add(custom);
 			customAmbientSoundsToMute.add(custom);
 		});
+
+		newAmbientSoundsToMute = new HashSet<>();
+		if (config.muteNewAmbientCastleDrakan())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.CASTLE_DRAKAN);
+		}
+		if (config.muteNewAmbientSangvesti())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.SANGVESTI);
+		}
+		if (config.muteNewAmbientSotfaForest())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.SOTFA_FOREST);
+		}
+		if (config.muteNewAmbientSotfaForestUnderground())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.SOTFA_FOREST_UNDERGROUND);
+		}
+		if (config.muteNewAmbientSugadintiHideoutInner())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.SUGADINTI_HIDEOUT_INNER);
+		}
+		if (config.muteNewAmbientSugadintiHideoutOuter())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.SUGADINTI_HIDEOUT_OUTER);
+		}
+		if (config.muteNewAmbientCastleDrakanRoof())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.CASTLE_DRAKAN_ROOF);
+		}
+		if (config.muteNewAmbientVampyrium())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.VAMPYRIUM);
+		}
+		if (config.muteNewAmbientWyrmscraig())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.WYRMSCRAIG);
+		}
+		if (config.muteNewAmbientWyrmscraigUnderground())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.WYRMSCRAIG_UNDERGROUND);
+		}
+		if (config.muteNewAmbientTfaEzekielFinale())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.TFA_EZEKIEL_FINALE);
+		}
+		if (config.muteNewAmbientTfaVault())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.TFA_VAULT);
+		}
+		if (config.muteNewAmbientTfaOcellus())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.TFA_OCELLUS);
+		}
+		if (config.muteNewAmbientTfaNexus())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.TFA_NEXUS);
+		}
+		if (config.muteNewAmbientTfaLobby())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.TFA_LOBBY);
+		}
+		if (config.muteNewAmbientTfaBork())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.TFA_BORK);
+		}
+		if (config.muteNewAmbientTfaXarth())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.TFA_XARTH);
+		}
+		if (config.muteNewAmbientTfaDagonhai())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.TFA_DAGONHAI);
+		}
+		if (config.muteNewAmbientTfaJelly())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.TFA_JELLY);
+		}
+		if (config.muteNewAmbientTfaMoia())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.TFA_MOIA);
+		}
+		if (config.muteNewAmbientTfaEzekiel())
+		{
+			newAmbientSoundsToMute.add(AmbientSoundID.TFA_EZEKIEL);
+		}
 
 		// index everything by sound id so the hot paths don't have to scan every effect
 		selectedSounds = new HashSet<>(getSelectedSounds());
