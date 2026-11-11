@@ -6,34 +6,34 @@ import lombok.Getter;
 @Getter
 public class AmbientSoundEffect extends SoundEffect
 {
-	int[] backgroundSoundEffects;
+	int[] randomSoundEffects;
 	int regionId;
 
 	public AmbientSoundEffect(int id, SoundEffectType soundEffectType)
 	{
 		super(id, soundEffectType);
-		this.backgroundSoundEffects = new int[]{};
+		this.randomSoundEffects = new int[]{};
 		this.regionId = -1;
 	}
 
-	public AmbientSoundEffect(int id, SoundEffectType soundEffectType, int[] backgroundSoundEffects)
+	public AmbientSoundEffect(int id, SoundEffectType soundEffectType, int[] randomSoundEffects)
 	{
 		super(id, soundEffectType);
-		this.backgroundSoundEffects = backgroundSoundEffects;
+		this.randomSoundEffects = randomSoundEffects;
 		this.regionId = -1;
 	}
 
 	public AmbientSoundEffect(int id, SoundEffectType soundEffectType, int regionId)
 	{
 		super(id, soundEffectType);
-		this.backgroundSoundEffects = new int[]{};
+		this.randomSoundEffects = new int[]{};
 		this.regionId = regionId;
 	}
 
-	public AmbientSoundEffect(int id, SoundEffectType soundEffectType, int[] backgroundSoundEffects, int regionId)
+	public AmbientSoundEffect(int id, SoundEffectType soundEffectType, int[] randomSoundEffects, int regionId)
 	{
 		super(id, soundEffectType);
-		this.backgroundSoundEffects = backgroundSoundEffects;
+		this.randomSoundEffects = randomSoundEffects;
 		this.regionId = regionId;
 	}
 }
