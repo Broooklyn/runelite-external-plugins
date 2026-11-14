@@ -53,12 +53,12 @@ import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
 import net.runelite.api.Player;
 import net.runelite.api.RandomSound;
-import net.runelite.api.Varbits;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AmbientSoundChanged;
 import net.runelite.api.events.AmbientSoundEffectCreated;
 import net.runelite.api.gameval.AmbientSoundID;
+import net.runelite.api.gameval.VarbitID;
 import net.runelite.api.events.AreaSoundEffectPlayed;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
@@ -316,7 +316,7 @@ public class AnnoyanceMutePlugin extends Plugin
 	private void muteAmbientSoundEffects()
 	{
 		soundsToKeep.clear();
-		Deque<net.runelite.api.AmbientSoundEffect> ambientSoundEffects = client.getAmbientSoundEffects();
+		Deque<net.runelite.api.AmbientSoundEffect> ambientSoundEffects = client.getTopLevelWorldView().getAmbientSoundEffects();
 
 		for (net.runelite.api.AmbientSoundEffect ambientSoundEffect : ambientSoundEffects)
 		{
@@ -471,7 +471,7 @@ public class AnnoyanceMutePlugin extends Plugin
 	// Clear the game's ambient sounds (mutes all of them), then add back the ones that are not black listed
 	private void restoreSoundsToKeep()
 	{
-		Deque<net.runelite.api.AmbientSoundEffect> ambientSoundEffects = client.getAmbientSoundEffects();
+		Deque<net.runelite.api.AmbientSoundEffect> ambientSoundEffects = client.getTopLevelWorldView().getAmbientSoundEffects();
 		ambientSoundEffects.clear();
 		for (net.runelite.api.AmbientSoundEffect ambientSoundEffect : soundsToKeep)
 		{
@@ -1077,7 +1077,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 		else if (source == null)
 		{
-			if (soundId == SoundEffectID.PET_WALKING_THUMP && client.getVarbitValue(Varbits.IN_RAID) == 1)
+			if (soundId == SoundEffectID.PET_WALKING_THUMP && client.getVarbitValue(VarbitID.RAIDS_CLIENT_INDUNGEON) == 1)
 			{
 				return;
 			}

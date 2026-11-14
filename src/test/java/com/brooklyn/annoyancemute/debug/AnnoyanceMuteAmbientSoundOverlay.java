@@ -25,7 +25,7 @@ import net.runelite.client.ui.overlay.components.LineComponent;
 /**
  * Shows the ambient sounds the client currently has, which is the state AnnoyanceMutePlugin mutes (the plugin edits it
  * in place), so what is listed is what is left after muting. That is the ambient sound the server set
- * (client.getAmbientSound()) and the ambient sound effects of the scene (client.getAmbientSoundEffects()).
+ * (client.getAmbientSound()) and the ambient sound effects of the scene (client.getTopLevelWorldView().getAmbientSoundEffects()).
  * <p>
  * The primary sounds are listed left aligned, then the random and background sounds that go with them, right aligned.
  * The lists are rebuilt after AnnoyanceMutePlugin has handled the same event, hence the priority.
@@ -158,7 +158,7 @@ class AnnoyanceMuteAmbientSoundOverlay extends OverlayPanel
 			}
 		}
 
-		for (AmbientSoundEffect effect : client.getAmbientSoundEffects())
+		for (AmbientSoundEffect effect : client.getTopLevelWorldView().getAmbientSoundEffects())
 		{
 			// -1 is an effect that only has background sounds
 			if (effect.getSoundEffectId() != -1)
