@@ -24,7 +24,6 @@
  */
 package com.brooklyn.annoyancemute;
 
-import com.brooklyn.annoyancemute.soundeffects.ActorCombatSoundEffect;
 import com.brooklyn.annoyancemute.soundeffects.AnimationSoundEffect;
 import com.brooklyn.annoyancemute.soundeffects.AmbientSoundEffect;
 import com.brooklyn.annoyancemute.soundeffects.SoundEffect;
@@ -567,18 +566,6 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.NIGHTMARE_SOUND);
 		}
-		// this section is probably not needed anymore as we mute based on being isFollowing()
-		// TODO remove this and other combat level based muting, probably
-//		if (config.mutePetSounds())
-//		{
-//			addActorCombat(0, SoundEffectID.SNAKELING_METAMORPHOSIS, SoundEffectID.CLOCKWORK_CAT_CLICK_CLICK,
-//				SoundEffectID.PET_KREEARRA_WING_FLAP, SoundEffectID.ELECTRIC_HYDRA_IN, SoundEffectID.ELECTRIC_HYDRA_OUT,
-//				SoundEffectID.IKKLE_HYDRA_RIGHT_FOOT_LETS_STOMP, SoundEffectID.IKKLE_HYDRA_LEFT_FOOT_LETS_STOMP,
-//				SoundEffectID.PET_WALKING_THUMP, SoundEffectID.VETION_JR_RIGHT_FOOT_LETS_STOMP,
-//				SoundEffectID.VETION_JR_LEFT_FOOT_LETS_STOMP, SoundEffectID.NOON_FLAP_1, SoundEffectID.NOON_FLAP_2,
-//				SoundEffectID.BEEF_NOISE_1, SoundEffectID.BEEF_NOISE_2, SoundEffectID.GULLIVER_EMOTE_1, SoundEffectID.GULLIVER_EMOTE_2);
-//			addActorCombat(0, SoundEffectID.MAGGOT_KING_PET_EMOTES);
-//		}
 		if (config.mutePetSounds() || config.muteRandoms())
 		{
 			addGeneric(SoundEffectID.CAT_HISS);
@@ -1038,14 +1025,6 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 	}
 
-	private void addActorCombat(int combatLevel, int... soundIds)
-	{
-		for (int soundId : soundIds)
-		{
-			soundEffects.add(new ActorCombatSoundEffect(soundId, SoundEffectType.EITHER, combatLevel));
-		}
-	}
-
 	private void addAmbient(int... soundIds)
 	{
 		for (int soundId : soundIds)
@@ -1126,9 +1105,8 @@ public class AnnoyanceMutePlugin extends Plugin
 			return false;
 		}
 
-		// sort the effects for this sound into generics, animations, and combat levels
+		// sort the effects for this sound into generics and animations
 		boolean hasGeneric = false;
-		boolean hasActor = false;
 		List<AnimationSoundEffect> animationSoundEffects = new ArrayList<>();
 		for (SoundEffect s : candidates)
 		{
@@ -1145,19 +1123,13 @@ public class AnnoyanceMutePlugin extends Plugin
 			{
 				animationSoundEffects.add((AnimationSoundEffect) s);
 			}
-			else if (s instanceof ActorCombatSoundEffect
-				&& source != null && ((ActorCombatSoundEffect) s).getActorCombatLevel() == source.getCombatLevel())
-			{
-				hasActor = true;
-			}
 		}
 
-		if (!hasGeneric && !hasActor && animationSoundEffects.isEmpty())
+		if (!hasGeneric && animationSoundEffects.isEmpty())
 		{
 			return false;
 		}
-		return hasGeneric && hasActor && animationSoundEffects.stream().anyMatch(s -> s.getAnimationID() == -1)
-			|| animationSoundEffects.stream().noneMatch(s -> s.getAnimationID() == client.getLocalPlayer().getAnimation());
+		return animationSoundEffects.stream().noneMatch(s -> s.getAnimationID() == client.getLocalPlayer().getAnimation());
 	}
 
 	private static boolean isFollower(@Nullable Actor actor)
