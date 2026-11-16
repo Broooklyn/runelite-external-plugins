@@ -1029,11 +1029,23 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "muteZeal",
+		name = "Zeal",
+		description = "Mutes the activation sound of Zeal",
+		section = prayerSection,
+		position = 29
+	)
+	default boolean muteZeal()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "muteDeactivatePrayer",
 		name = "Deactivate Prayer",
 		description = "Mutes the prayer deactivation sound",
 		section = prayerSection,
-		position = 29
+		position = 30
 	)
 	default boolean muteDeactivatePrayer()
 	{
@@ -1054,7 +1066,7 @@ public interface AnnoyanceMuteConfig extends Config
 	@ConfigItem(
 		keyName = "ambientSoundsToMute",
 		name = "Muted Ambient Sounds",
-		description = "Enter IDs of the ambient sounds you wish to mute",
+		description = "Enter IDs of the ambient sounds you wish to mute everywhere, separated by commas. This mutes the whole ambient sound, including every random sound inside it (e.g. -1 mutes all -1 ambient sounds)",
 		position = 31
 	)
 	default String ambientSoundsToMute()
@@ -1065,11 +1077,47 @@ public interface AnnoyanceMuteConfig extends Config
 	@ConfigItem(
 		keyName = "ambientSoundsToMuteRegional",
 		name = "Regional Muted Ambient Sounds",
-		description = "Enter IDs of the ambient sounds you wish to mute within a region in the format of regionid:soundid",
+		description = "Enter IDs of the ambient sounds you wish to mute only while in a region, separated by commas, in the format of regionid:soundid (e.g. 4020:-1 mutes -1 ambient sounds in region 4020)",
 		position = 32
 	)
 	default String ambientSoundsToMuteRegional()
 	{
 		return "";
+	}
+
+	@ConfigItem(
+		keyName = "muteNewAmbientVampyrium",
+		name = "Vampyrium",
+		description = "Mutes the ambient sounds of Vampyrium, Castle Drakan, Sangvesti, the SOTFA forest and the Sugadinti hideout",
+		section = ambientSection,
+		position = 1001
+	)
+	default boolean muteNewAmbientVampyrium()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "muteNewAmbientWyrmscraig",
+		name = "Wyrmscraig",
+		description = "Mutes the ambient sounds of Wyrmscraig and Wyrmscraig Underground",
+		section = ambientSection,
+		position = 1002
+	)
+	default boolean muteNewAmbientWyrmscraig()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "muteNewAmbientTfa",
+		name = "TFA",
+		description = "Mutes the ambient sounds of TFA",
+		section = ambientSection,
+		position = 1003
+	)
+	default boolean muteNewAmbientTfa()
+	{
+		return false;
 	}
 }
