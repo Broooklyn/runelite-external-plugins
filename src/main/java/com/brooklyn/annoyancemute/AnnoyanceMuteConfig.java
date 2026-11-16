@@ -1086,95 +1086,11 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "muteNewAmbientCastleDrakan",
-		name = "Castle Drakan",
-		description = "Mutes the ambient sound of Castle Drakan",
-		section = ambientSection,
-		position = 1001
-	)
-	default boolean muteNewAmbientCastleDrakan()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientSangvesti",
-		name = "Sangvesti",
-		description = "Mutes the ambient sound of Sangvesti",
-		section = ambientSection,
-		position = 1002
-	)
-	default boolean muteNewAmbientSangvesti()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientSotfaForest",
-		name = "SOTFA Forest",
-		description = "Mutes the ambient sound of SOTFA Forest",
-		section = ambientSection,
-		position = 1003
-	)
-	default boolean muteNewAmbientSotfaForest()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientSotfaForestUnderground",
-		name = "SOTFA Forest Underground",
-		description = "Mutes the ambient sound of SOTFA Forest Underground",
-		section = ambientSection,
-		position = 1004
-	)
-	default boolean muteNewAmbientSotfaForestUnderground()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientSugadintiHideoutInner",
-		name = "Sugadinti Hideout Inner",
-		description = "Mutes the ambient sound of Sugadinti Hideout Inner",
-		section = ambientSection,
-		position = 1005
-	)
-	default boolean muteNewAmbientSugadintiHideoutInner()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientSugadintiHideoutOuter",
-		name = "Sugadinti Hideout Outer",
-		description = "Mutes the ambient sound of Sugadinti Hideout Outer",
-		section = ambientSection,
-		position = 1006
-	)
-	default boolean muteNewAmbientSugadintiHideoutOuter()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientCastleDrakanRoof",
-		name = "Castle Drakan Roof",
-		description = "Mutes the ambient sound of Castle Drakan Roof",
-		section = ambientSection,
-		position = 1007
-	)
-	default boolean muteNewAmbientCastleDrakanRoof()
-	{
-		return false;
-	}
-
-	@ConfigItem(
 		keyName = "muteNewAmbientVampyrium",
 		name = "Vampyrium",
-		description = "Mutes the ambient sound of Vampyrium",
+		description = "Mutes the ambient sounds of Vampyrium, Castle Drakan, Sangvesti, the SOTFA forest and the Sugadinti hideout",
 		section = ambientSection,
-		position = 1008
+		position = 1001
 	)
 	default boolean muteNewAmbientVampyrium()
 	{
@@ -1184,9 +1100,9 @@ public interface AnnoyanceMuteConfig extends Config
 	@ConfigItem(
 		keyName = "muteNewAmbientWyrmscraig",
 		name = "Wyrmscraig",
-		description = "Mutes the ambient sound of Wyrmscraig",
+		description = "Mutes the ambient sounds of Wyrmscraig and Wyrmscraig Underground",
 		section = ambientSection,
-		position = 1009
+		position = 1002
 	)
 	default boolean muteNewAmbientWyrmscraig()
 	{
@@ -1194,145 +1110,13 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "muteNewAmbientWyrmscraigUnderground",
-		name = "Wyrmscraig Underground",
-		description = "Mutes the ambient sound of Wyrmscraig Underground",
+		keyName = "muteNewAmbientTfa",
+		name = "TFA",
+		description = "Mutes the ambient sounds of TFA",
 		section = ambientSection,
-		position = 1010
+		position = 1003
 	)
-	default boolean muteNewAmbientWyrmscraigUnderground()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientTfaEzekielFinale",
-		name = "TFA Ezekiel Finale",
-		description = "Mutes the ambient sound of TFA Ezekiel Finale",
-		section = ambientSection,
-		position = 1011
-	)
-	default boolean muteNewAmbientTfaEzekielFinale()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientTfaVault",
-		name = "TFA Vault",
-		description = "Mutes the ambient sound of TFA Vault",
-		section = ambientSection,
-		position = 1012
-	)
-	default boolean muteNewAmbientTfaVault()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientTfaOcellus",
-		name = "TFA Ocellus",
-		description = "Mutes the ambient sound of TFA Ocellus",
-		section = ambientSection,
-		position = 1013
-	)
-	default boolean muteNewAmbientTfaOcellus()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientTfaNexus",
-		name = "TFA Nexus",
-		description = "Mutes the ambient sound of TFA Nexus",
-		section = ambientSection,
-		position = 1014
-	)
-	default boolean muteNewAmbientTfaNexus()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientTfaLobby",
-		name = "TFA Lobby",
-		description = "Mutes the ambient sound of TFA Lobby",
-		section = ambientSection,
-		position = 1015
-	)
-	default boolean muteNewAmbientTfaLobby()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientTfaBork",
-		name = "TFA Bork",
-		description = "Mutes the ambient sound of TFA Bork",
-		section = ambientSection,
-		position = 1016
-	)
-	default boolean muteNewAmbientTfaBork()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientTfaXarth",
-		name = "TFA Xarth",
-		description = "Mutes the ambient sound of TFA Xarth",
-		section = ambientSection,
-		position = 1017
-	)
-	default boolean muteNewAmbientTfaXarth()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientTfaDagonhai",
-		name = "TFA Dagonhai",
-		description = "Mutes the ambient sound of TFA Dagonhai",
-		section = ambientSection,
-		position = 1018
-	)
-	default boolean muteNewAmbientTfaDagonhai()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientTfaJelly",
-		name = "TFA Jelly",
-		description = "Mutes the ambient sound of TFA Jelly",
-		section = ambientSection,
-		position = 1019
-	)
-	default boolean muteNewAmbientTfaJelly()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientTfaMoia",
-		name = "TFA Moia",
-		description = "Mutes the ambient sound of TFA Moia",
-		section = ambientSection,
-		position = 1020
-	)
-	default boolean muteNewAmbientTfaMoia()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteNewAmbientTfaEzekiel",
-		name = "TFA Ezekiel",
-		description = "Mutes the ambient sound of TFA Ezekiel",
-		section = ambientSection,
-		position = 1021
-	)
-	default boolean muteNewAmbientTfaEzekiel()
+	default boolean muteNewAmbientTfa()
 	{
 		return false;
 	}

@@ -900,89 +900,41 @@ public class AnnoyanceMutePlugin extends Plugin
 		});
 
 		newAmbientSoundsToMute = new HashSet<>();
-		if (config.muteNewAmbientCastleDrakan())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.CASTLE_DRAKAN);
-		}
-		if (config.muteNewAmbientSangvesti())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.SANGVESTI);
-		}
-		if (config.muteNewAmbientSotfaForest())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.SOTFA_FOREST);
-		}
-		if (config.muteNewAmbientSotfaForestUnderground())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.SOTFA_FOREST_UNDERGROUND);
-		}
-		if (config.muteNewAmbientSugadintiHideoutInner())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.SUGADINTI_HIDEOUT_INNER);
-		}
-		if (config.muteNewAmbientSugadintiHideoutOuter())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.SUGADINTI_HIDEOUT_OUTER);
-		}
-		if (config.muteNewAmbientCastleDrakanRoof())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.CASTLE_DRAKAN_ROOF);
-		}
 		if (config.muteNewAmbientVampyrium())
 		{
-			newAmbientSoundsToMute.add(AmbientSoundID.VAMPYRIUM);
+			newAmbientSoundsToMute.addAll(List.of(
+				AmbientSoundID.CASTLE_DRAKAN,
+				AmbientSoundID.SANGVESTI,
+				AmbientSoundID.SOTFA_FOREST,
+				AmbientSoundID.SOTFA_FOREST_UNDERGROUND,
+				AmbientSoundID.SUGADINTI_HIDEOUT_INNER,
+				AmbientSoundID.SUGADINTI_HIDEOUT_OUTER,
+				AmbientSoundID.CASTLE_DRAKAN_ROOF,
+				AmbientSoundID.VAMPYRIUM
+			));
 		}
 		if (config.muteNewAmbientWyrmscraig())
 		{
-			newAmbientSoundsToMute.add(AmbientSoundID.WYRMSCRAIG);
+			newAmbientSoundsToMute.addAll(List.of(
+				AmbientSoundID.WYRMSCRAIG,
+				AmbientSoundID.WYRMSCRAIG_UNDERGROUND
+			));
 		}
-		if (config.muteNewAmbientWyrmscraigUnderground())
+		if (config.muteNewAmbientTfa())
 		{
-			newAmbientSoundsToMute.add(AmbientSoundID.WYRMSCRAIG_UNDERGROUND);
-		}
-		if (config.muteNewAmbientTfaEzekielFinale())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.TFA_EZEKIEL_FINALE);
-		}
-		if (config.muteNewAmbientTfaVault())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.TFA_VAULT);
-		}
-		if (config.muteNewAmbientTfaOcellus())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.TFA_OCELLUS);
-		}
-		if (config.muteNewAmbientTfaNexus())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.TFA_NEXUS);
-		}
-		if (config.muteNewAmbientTfaLobby())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.TFA_LOBBY);
-		}
-		if (config.muteNewAmbientTfaBork())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.TFA_BORK);
-		}
-		if (config.muteNewAmbientTfaXarth())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.TFA_XARTH);
-		}
-		if (config.muteNewAmbientTfaDagonhai())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.TFA_DAGONHAI);
-		}
-		if (config.muteNewAmbientTfaJelly())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.TFA_JELLY);
-		}
-		if (config.muteNewAmbientTfaMoia())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.TFA_MOIA);
-		}
-		if (config.muteNewAmbientTfaEzekiel())
-		{
-			newAmbientSoundsToMute.add(AmbientSoundID.TFA_EZEKIEL);
+			newAmbientSoundsToMute.addAll(List.of(
+				AmbientSoundID.TFA_EZEKIEL_FINALE,
+				AmbientSoundID.TFA_VAULT,
+				AmbientSoundID.TFA_OCELLUS,
+				AmbientSoundID.TFA_NEXUS,
+				AmbientSoundID.TFA_LOBBY,
+				AmbientSoundID.TFA_BORK,
+				AmbientSoundID.TFA_XARTH,
+				AmbientSoundID.TFA_DAGONHAI,
+				AmbientSoundID.TFA_JELLY,
+				AmbientSoundID.TFA_MOIA,
+				AmbientSoundID.TFA_EZEKIEL
+			));
 		}
 
 		// index everything by sound id so the hot paths don't have to scan every effect
