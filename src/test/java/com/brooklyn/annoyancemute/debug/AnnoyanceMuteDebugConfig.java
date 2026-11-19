@@ -12,7 +12,7 @@ public interface AnnoyanceMuteDebugConfig extends Config
 	@ConfigItem(
 		keyName = "showAmbientSounds",
 		name = "Ambient sounds overlay",
-		description = "Shows the ambient sounds the client currently has. Primary sounds on the left, random and background sounds on the right",
+		description = "Shows the ambient sounds the client currently has, each primary sound followed by its random and background sounds in brackets",
 		position = 0
 	)
 	default boolean showAmbientSounds()

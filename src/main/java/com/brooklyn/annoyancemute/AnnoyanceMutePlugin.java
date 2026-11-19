@@ -29,6 +29,8 @@ import com.brooklyn.annoyancemute.soundeffects.AmbientSoundEffect;
 import com.brooklyn.annoyancemute.soundeffects.SoundEffect;
 import com.brooklyn.annoyancemute.soundeffects.GenericSoundEffect;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
 import com.google.inject.Provides;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +38,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,7 +59,9 @@ import net.runelite.api.WorldView;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AmbientSoundChanged;
 import net.runelite.api.events.AmbientSoundEffectCreated;
+import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.gameval.AmbientSoundID;
+import net.runelite.api.gameval.ObjectID;
 import net.runelite.api.gameval.VarbitID;
 import net.runelite.api.events.AreaSoundEffectPlayed;
 import net.runelite.api.events.GameStateChanged;
@@ -108,6 +113,12 @@ public class AnnoyanceMutePlugin extends Plugin
 	@Inject
 	private AnnoyanceMuteConfig config;
 
+	@Inject
+	private Gson gson;
+
+	// Built from the injected gson the first time a name is needed
+	private SoundNames soundNames;
+
 	@VisibleForTesting
 	public HashSet<SoundEffect> soundEffects = new HashSet<>();
 
@@ -117,8 +128,22 @@ public class AnnoyanceMutePlugin extends Plugin
 	// Whether every sound made by a follower (a pet) is muted, cached from the config on each change
 	private boolean mutePetFollowers;
 
+	// Object ids that only spawn inside a player owned house
+	private static final Set<Integer> POH_PET_HOUSE_OBJECTS = ImmutableSet.of(
+		ObjectID.POH_MENAGERIE_PETHOUSE_HOTSPOT,
+		ObjectID.POH_MENAGERIE_PETHOUSE_1,
+		ObjectID.POH_MENAGERIE_PETHOUSE_2,
+		ObjectID.POH_MENAGERIE_PETHOUSE_3,
+		ObjectID.POH_MENAGERIE_PETHOUSE_4,
+		ObjectID.POH_MENAGERIE_PETHOUSE_5,
+		ObjectID.POH_MENAGERIE_PETHOUSE_6
+	);
+
+	// Set once a pet house object spawns, reset when a new scene starts loading
+	private boolean isInPoh;
+
 	// The user's custom "sounds to mute" list, parsed once per config change
-	private Set<String> selectedSounds = Collections.emptySet();
+	private Set<Integer> selectedSounds = Collections.emptySet();
 
 	@Getter(AccessLevel.PUBLIC)
 	public HashSet<SoundEffect> ambientSoundsToMute = new HashSet<>();
@@ -153,6 +178,7 @@ public class AnnoyanceMutePlugin extends Plugin
 	@Override
 	public void shutDown()
 	{
+		isInPoh = false;
 		soundEffects.clear();
 		soundEffectsById.clear();
 		clientThread.invoke(this::restoreAmbientSoundRandomSounds);
@@ -257,6 +283,12 @@ public class AnnoyanceMutePlugin extends Plugin
 	{
 		GameState gameState = gameStateChanged.getGameState();
 
+		// the scene is rebuilt on LOADING and the house objects spawn again if we are still in one
+		if (gameState == GameState.LOADING)
+		{
+			isInPoh = false;
+		}
+
 		// on map load mute ambient sounds
 		if (gameState == GameState.LOGGED_IN)
 		{
@@ -284,6 +316,21 @@ public class AnnoyanceMutePlugin extends Plugin
 				currentPlayerRegionId = wp.getRegionID();
 				muteAmbientSounds();
 			}
+		}
+	}
+
+	@Subscribe
+	public void onGameObjectSpawned(GameObjectSpawned event)
+	{
+		if (isInPoh)
+		{
+			return;
+		}
+
+		// The pet house (menagerie) objects only exist in a player owned house
+		if (POH_PET_HOUSE_OBJECTS.contains(event.getGameObject().getId()))
+		{
+			isInPoh = true;
 		}
 	}
 
@@ -402,7 +449,7 @@ public class AnnoyanceMutePlugin extends Plugin
 				continue;
 			}
 
-			int[] remaining = Arrays.stream(ids).filter(id -> !selectedSounds.contains(Integer.toString(id))).toArray();
+			int[] remaining = Arrays.stream(ids).filter(id -> !selectedSounds.contains(id)).toArray();
 			if (remaining.length == 0)
 			{
 				emptied.add(randomSound);
@@ -443,7 +490,7 @@ public class AnnoyanceMutePlugin extends Plugin
 			return;
 		}
 
-		int[] remaining = Arrays.stream(ids).filter(id -> !selectedSounds.contains(Integer.toString(id))).toArray();
+		int[] remaining = Arrays.stream(ids).filter(id -> !selectedSounds.contains(id)).toArray();
 		// random sounds can be shared and cached by the client, remember the original ids so they can be put back
 		originalRandomSoundIds.putIfAbsent(randomSound, ids);
 		randomSound.setSoundEffectIds(remaining.length == 0 ? null : remaining);
@@ -451,7 +498,7 @@ public class AnnoyanceMutePlugin extends Plugin
 
 	private boolean anySelected(@Nullable int[] ids)
 	{
-		return ids != null && Arrays.stream(ids).anyMatch(id -> selectedSounds.contains(Integer.toString(id)));
+		return ids != null && Arrays.stream(ids).anyMatch(id -> selectedSounds.contains(id));
 	}
 
 	// Put back the random sounds removed by removeSelectedSoundsFromAmbientSound
@@ -566,15 +613,16 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.NIGHTMARE_SOUND);
 		}
+
+		// Applicable to both pet sounds and random event sounds
 		if (config.mutePetSounds() || config.muteRandoms())
 		{
 			addGeneric(SoundEffectID.CAT_HISS);
 		}
 
-		// Applicable to both pet sounds and random event sounds
 		if (config.muteRandoms())
 		{
-			addGeneric(SoundEffectID.NPC_TELEPORT_WOOSH, SoundEffectID.DRUNKEN_DWARF, SoundEffectID.POSTIE_PETE, SoundEffectID.FROG_SPLASH);
+			addGeneric(SoundEffectID.NPC_TELEPORT_WOOSH, SoundEffectID.EVIL_BOB, SoundEffectID.DRUNKEN_DWARF, SoundEffectID.POSTIE_PETE, SoundEffectID.FROG_SPLASH);
 		}
 		if (config.muteScarabs())
 		{
@@ -891,13 +939,10 @@ public class AnnoyanceMutePlugin extends Plugin
 			ambientSoundsToMute.add(new AmbientSoundEffect(i, SoundEffectType.AMBIENT));
 		}
 
-		getRegionalAmbientSounds().forEach(entry -> {
-			String[] e = entry.split(":");
-			int regionId = Integer.parseInt(e[0]);
-			int soundId = Integer.parseInt(e[1]);
-
-			ambientSoundsToMute.add(new AmbientSoundEffect(soundId, SoundEffectType.AMBIENT, regionId));
-		});
+		for (int[] entry : getRegionalAmbientSounds())
+		{
+			ambientSoundsToMute.add(new AmbientSoundEffect(entry[1], SoundEffectType.AMBIENT, entry[0]));
+		}
 
 		newAmbientSoundsToMute = new HashSet<>();
 		if (config.muteNewAmbientVampyrium())
@@ -938,7 +983,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 
 		// index everything by sound id so the hot paths don't have to scan every effect
-		selectedSounds = new HashSet<>(getSelectedSounds());
+		selectedSounds = getSelectedSounds();
 
 		soundEffectsById = new HashMap<>();
 		for (SoundEffect soundEffect : soundEffects)
@@ -1040,13 +1085,20 @@ public class AnnoyanceMutePlugin extends Plugin
 	@VisibleForTesting
 	public boolean shouldMute(int soundId, SoundEffectType type, @Nullable Actor source)
 	{
-		if (selectedSounds.contains(Integer.toString(soundId)))
+		if (selectedSounds.contains(soundId))
 		{
 			return true;
 		}
 
 		// everything a pet makes goes, no matter which sound it is
 		if (mutePetFollowers && isFollower(source))
+		{
+			return true;
+		}
+
+		// pets in the player's house are not followers, they are level 0 npcs walking around
+		// (only applied in a house so level 0 npcs elsewhere are untouched)
+		if (mutePetFollowers && isInPoh && source instanceof NPC && source.getCombatLevel() == 0)
 		{
 			return true;
 		}
@@ -1095,65 +1147,83 @@ public class AnnoyanceMutePlugin extends Plugin
 		return composition != null && composition.isFollower();
 	}
 
-	public List<String> getSelectedSounds()
+	// Every entry of the "Muted Sounds" config as a sound id. An entry is an id or a sound name,
+	// anything else is ignored
+	public Set<Integer> getSelectedSounds()
 	{
-		final String configSounds = config.soundsToMute().toLowerCase();
-
-		if (configSounds.isEmpty())
-		{
-			return Collections.emptyList();
-		}
-
-		return Text.fromCSV(configSounds);
+		return resolveSoundIds(config.soundsToMute());
 	}
 
+	// Every entry of the "Muted Ambient Sounds" config as a sound id. An entry is an id or a sound name,
+	// anything else is ignored
 	public List<Integer> getGenericAmbientSounds()
 	{
-		final String configSounds = config.ambientSoundsToMute().toLowerCase();
-
-		List<String> configValue = Text.fromCSV(configSounds);
-
-		ArrayList<Integer> returnValues = new ArrayList<>();
-		for (String str : configValue)
-		{
-			if (tryParseInt(str))
-			{
-				returnValues.add(Integer.parseInt(str));
-			}
-		}
-
-		return returnValues;
+		return new ArrayList<>(resolveSoundIds(config.ambientSoundsToMute()));
 	}
 
-	public List<String> getRegionalAmbientSounds()
+	// Every entry of the "Regional Muted Ambient Sounds" config as {regionId, soundId}. An entry is regionid:soundid
+	// or regionid:soundname, anything else is ignored
+	public List<int[]> getRegionalAmbientSounds()
 	{
-		final String configSounds = config.ambientSoundsToMuteRegional().toLowerCase();
-
-		List<String> configValue = Text.fromCSV(configSounds);
-
-		ArrayList<String> returnValues = new ArrayList<>();
-		for (String str : configValue)
+		List<int[]> returnValues = new ArrayList<>();
+		for (String str : Text.fromCSV(config.ambientSoundsToMuteRegional()))
 		{
 			String[] parts = str.split(":");
-			if (parts.length > 1 && tryParseInt(parts[0]) && tryParseInt(parts[1]))
+			if (parts.length != 2)
 			{
-				returnValues.add(Integer.parseInt(parts[0]) + ":" + Integer.parseInt(parts[1]));
+				continue;
+			}
+
+			Integer regionId = parseInt(parts[0]);
+			Integer soundId = getSoundNames().resolveSoundId(parts[1]);
+			if (regionId != null && soundId != null)
+			{
+				returnValues.add(new int[]{regionId, soundId});
 			}
 		}
 
 		return returnValues;
 	}
 
-	private boolean tryParseInt(String value)
+	public SoundNames getSoundNames()
+	{
+		if (soundNames == null)
+		{
+			soundNames = new SoundNames(gson);
+		}
+		return soundNames;
+	}
+
+	private Set<Integer> resolveSoundIds(@Nullable String configSounds)
+	{
+		if (configSounds == null || configSounds.isEmpty())
+		{
+			return Collections.emptySet();
+		}
+
+		Set<Integer> soundIds = new LinkedHashSet<>();
+		for (String entry : Text.fromCSV(configSounds))
+		{
+			Integer soundId = getSoundNames().resolveSoundId(entry);
+			if (soundId != null)
+			{
+				soundIds.add(soundId);
+			}
+		}
+
+		return soundIds;
+	}
+
+	@Nullable
+	private static Integer parseInt(String value)
 	{
 		try
 		{
-			Integer.parseInt(value);
-			return true;
+			return Integer.parseInt(value.trim());
 		}
 		catch (NumberFormatException e)
 		{
-			return false;
+			return null;
 		}
 	}
 }

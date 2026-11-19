@@ -2,11 +2,15 @@ package com.brooklyn.annoyancemute.debug;
 
 import com.brooklyn.annoyancemute.AnnoyanceMutePlugin;
 import com.brooklyn.annoyancemute.SoundEffectType;
+import com.brooklyn.annoyancemute.SoundNames;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
+import net.runelite.api.Actor;
 import net.runelite.api.Client;
+import net.runelite.api.NPC;
 import net.runelite.api.Player;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.events.AreaSoundEffectPlayed;
@@ -65,7 +69,8 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 	{
 		int soundId = event.getSoundId();
 
-		String text = "G: " + soundLabel(soundId) +
+		String text = "G: " + soundLabel(plugin.getSoundNames(), soundId) +
+			" - S: " + sourceLabel(event.getSource()) +
 			" - D: " + event.getDelay();
 
 		String action = ALLOWED;
@@ -95,8 +100,8 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 
 		int soundId = event.getSoundId();
 		String text =
-			"Id: " + soundLabel(soundId) +
-				" - S: " + (event.getSource() != null ? event.getSource().getName() : "<none>") +
+			"Id: " + soundLabel(plugin.getSoundNames(), soundId) +
+				" - S: " + sourceLabel(event.getSource()) +
 				" - L: " + event.getSceneX() + "," + event.getSceneY() +
 				" - R: " + event.getRange() +
 				" - D: " + event.getDelay();
@@ -115,7 +120,7 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 				if (distance > event.getRange())
 				{
 					textColor = COLOR_SILENT_SOUND_EFFECT;
-					text = "SA: " + soundLabel(soundId);
+					text = "SA: " + soundLabel(plugin.getSoundNames(), soundId);
 				}
 			}
 		}
@@ -136,10 +141,20 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 		checkMaxLines();
 	}
 
-	static String soundLabel(int soundId)
+	static String soundLabel(SoundNames soundNames, int soundId)
 	{
-		String name = SoundNames.get(soundId);
+		String name = soundNames.getSoundName(soundId);
 		return name != null ? name + " (" + soundId + ")" : String.valueOf(soundId);
+	}
+
+	static String sourceLabel(@Nullable Actor source)
+	{
+		if (source == null)
+		{
+			return "<none>";
+		}
+		String id = source instanceof NPC ? "id " + ((NPC) source).getId() + ", " : "";
+		return source.getName() + " (" + id + "cb " + source.getCombatLevel() + ")";
 	}
 
 	private void checkMaxLines()
