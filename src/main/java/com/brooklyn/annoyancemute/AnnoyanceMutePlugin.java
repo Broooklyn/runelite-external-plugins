@@ -1051,6 +1051,12 @@ public class AnnoyanceMutePlugin extends Plugin
 			return true;
 		}
 
+		// pets in the player's house are not followers, they are level 0 npcs walking around
+		if (mutePetFollowers && source instanceof NPC && source.getCombatLevel() == 0)
+		{
+			return true;
+		}
+
 		List<SoundEffect> candidates = soundEffectsById.get(soundId);
 		if (candidates == null)
 		{
