@@ -13,7 +13,7 @@ repositories {
 	mavenCentral()
 }
 
-def runeLiteVersion = 'latest.integration'
+def runeLiteVersion = 'latest.release'
 def pluginMainClass = 'com.brooklyn.annoyancemute.AnnoyanceMutePluginTest'
 
 dependencies {
