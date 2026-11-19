@@ -5,8 +5,11 @@ import com.brooklyn.annoyancemute.SoundEffectType;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import javax.annotation.Nullable;
 import javax.inject.Inject;
+import net.runelite.api.Actor;
 import net.runelite.api.Client;
+import net.runelite.api.NPC;
 import net.runelite.api.Player;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.events.AreaSoundEffectPlayed;
@@ -66,6 +69,7 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 		int soundId = event.getSoundId();
 
 		String text = "G: " + soundLabel(soundId) +
+			" - S: " + sourceLabel(event.getSource()) +
 			" - D: " + event.getDelay();
 
 		String action = ALLOWED;
@@ -96,7 +100,7 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 		int soundId = event.getSoundId();
 		String text =
 			"Id: " + soundLabel(soundId) +
-				" - S: " + (event.getSource() != null ? event.getSource().getName() : "<none>") +
+				" - S: " + sourceLabel(event.getSource()) +
 				" - L: " + event.getSceneX() + "," + event.getSceneY() +
 				" - R: " + event.getRange() +
 				" - D: " + event.getDelay();
@@ -140,6 +144,16 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 	{
 		String name = SoundNames.get(soundId);
 		return name != null ? name + " (" + soundId + ")" : String.valueOf(soundId);
+	}
+
+	static String sourceLabel(@Nullable Actor source)
+	{
+		if (source == null)
+		{
+			return "<none>";
+		}
+		String id = source instanceof NPC ? "id " + ((NPC) source).getId() + ", " : "";
+		return source.getName() + " (" + id + "cb " + source.getCombatLevel() + ")";
 	}
 
 	private void checkMaxLines()
