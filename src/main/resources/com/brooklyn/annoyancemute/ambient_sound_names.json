@@ -1,0 +1,23 @@
+{
+  "castle_drakan": 1,
+  "sangvesti": 2,
+  "sotfa_forest": 3,
+  "sotfa_forest_underground": 4,
+  "sugadinti_hideout_inner": 5,
+  "sugadinti_hideout_outer": 6,
+  "castle_drakan_roof": 7,
+  "vampyrium": 8,
+  "wyrmscraig": 9,
+  "wyrmscraig_underground": 10,
+  "tfa_ezekiel_finale": 11,
+  "tfa_vault": 12,
+  "tfa_ocellus": 13,
+  "tfa_nexus": 14,
+  "tfa_lobby": 15,
+  "tfa_bork": 16,
+  "tfa_xarth": 17,
+  "tfa_dagonhai": 18,
+  "tfa_jelly": 19,
+  "tfa_moia": 20,
+  "tfa_ezekiel": 21
+}

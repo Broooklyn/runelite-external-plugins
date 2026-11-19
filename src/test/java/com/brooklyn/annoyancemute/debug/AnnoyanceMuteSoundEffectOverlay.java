@@ -2,6 +2,7 @@ package com.brooklyn.annoyancemute.debug;
 
 import com.brooklyn.annoyancemute.AnnoyanceMutePlugin;
 import com.brooklyn.annoyancemute.SoundEffectType;
+import com.brooklyn.annoyancemute.SoundNames;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -68,7 +69,7 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 	{
 		int soundId = event.getSoundId();
 
-		String text = "G: " + soundLabel(soundId) +
+		String text = "G: " + soundLabel(plugin.getSoundNames(), soundId) +
 			" - S: " + sourceLabel(event.getSource()) +
 			" - D: " + event.getDelay();
 
@@ -99,7 +100,7 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 
 		int soundId = event.getSoundId();
 		String text =
-			"Id: " + soundLabel(soundId) +
+			"Id: " + soundLabel(plugin.getSoundNames(), soundId) +
 				" - S: " + sourceLabel(event.getSource()) +
 				" - L: " + event.getSceneX() + "," + event.getSceneY() +
 				" - R: " + event.getRange() +
@@ -119,7 +120,7 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 				if (distance > event.getRange())
 				{
 					textColor = COLOR_SILENT_SOUND_EFFECT;
-					text = "SA: " + soundLabel(soundId);
+					text = "SA: " + soundLabel(plugin.getSoundNames(), soundId);
 				}
 			}
 		}
@@ -140,9 +141,9 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 		checkMaxLines();
 	}
 
-	static String soundLabel(int soundId)
+	static String soundLabel(SoundNames soundNames, int soundId)
 	{
-		String name = SoundNames.get(soundId);
+		String name = soundNames.getSoundName(soundId);
 		return name != null ? name + " (" + soundId + ")" : String.valueOf(soundId);
 	}
 

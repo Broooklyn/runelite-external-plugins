@@ -48,6 +48,7 @@ public class AnnoyanceMutePluginDebug extends Plugin
 			.findFirst()
 			.orElseThrow(() -> new IllegalStateException("Annoyance Mute is not loaded"));
 		soundEffectOverlay.setMutePlugin(mutePlugin);
+		ambientSoundOverlay.setMutePlugin(mutePlugin);
 		overlayManager.add(ambientSoundOverlay);
 		overlayManager.add(soundEffectOverlay);
 		eventBus.register(ambientSoundOverlay);

@@ -11,6 +11,10 @@ import net.runelite.api.NPCComposition;
 import net.runelite.api.Player;
 import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.events.ConfigChanged;
+import java.util.Arrays;
+import java.util.List;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
@@ -214,5 +218,58 @@ public class AnnoyanceMuteTests
 		when(localPlayer.getAnimation()).thenReturn(7284);
 
 		assertFalse(plugin.shouldMute(SoundEffectID.TELEPORT_VWOOP, SoundEffectType.EITHER, localPlayer));
+	}
+
+	private void configChanged()
+	{
+		ConfigChanged configChanged = new ConfigChanged();
+		configChanged.setGroup("annoyancemute");
+		configChanged.setKey("soundsToMute");
+		plugin.onConfigChanged(configChanged);
+	}
+
+	@Test
+	public void mutedSoundsAcceptIdsAndNames()
+	{
+		when(config.soundsToMute()).thenReturn("chaos_elemental_madness_impact");
+		configChanged();
+		assertTrue(plugin.shouldMute(353, SoundEffectType.EITHER, null));
+
+		when(config.soundsToMute()).thenReturn("353");
+		configChanged();
+		assertTrue(plugin.shouldMute(353, SoundEffectType.EITHER, null));
+
+		// names are not case sensitive and entries can be mixed
+		when(config.soundsToMute()).thenReturn("1, Chaos_Elemental_Madness_Impact");
+		configChanged();
+		assertTrue(plugin.shouldMute(353, SoundEffectType.EITHER, null));
+		assertTrue(plugin.shouldMute(1, SoundEffectType.EITHER, null));
+		assertFalse(plugin.shouldMute(354, SoundEffectType.EITHER, null));
+	}
+
+	@Test
+	public void mutedSoundsIgnoreInvalidNames()
+	{
+		when(config.soundsToMute()).thenReturn("not_a_real_sound,,  ,353:,chaos_elemental_madness_impact");
+		configChanged();
+		assertTrue(plugin.shouldMute(353, SoundEffectType.EITHER, null));
+		assertFalse(plugin.shouldMute(354, SoundEffectType.EITHER, null));
+	}
+
+	@Test
+	public void mutedAmbientSoundsAcceptIdsAndNames()
+	{
+		when(config.ambientSoundsToMute()).thenReturn("chaos_elemental_madness_impact, 12, nope");
+		assertEquals(Arrays.asList(353, 12), plugin.getGenericAmbientSounds());
+	}
+
+	@Test
+	public void regionalMutedAmbientSoundsAcceptIdsAndNames()
+	{
+		when(config.ambientSoundsToMuteRegional()).thenReturn("4020:chaos_elemental_madness_impact,4021:12,4022:nope,nope:353,4023,1:2:3");
+		List<int[]> regional = plugin.getRegionalAmbientSounds();
+		assertEquals(2, regional.size());
+		assertArrayEquals(new int[]{4020, 353}, regional.get(0));
+		assertArrayEquals(new int[]{4021, 12}, regional.get(1));
 	}
 }
