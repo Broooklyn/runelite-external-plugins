@@ -28,6 +28,7 @@ import com.brooklyn.annoyancemute.soundeffects.AnimationSoundEffect;
 import com.brooklyn.annoyancemute.soundeffects.AmbientSoundEffect;
 import com.brooklyn.annoyancemute.soundeffects.SoundEffect;
 import com.brooklyn.annoyancemute.soundeffects.GenericSoundEffect;
+import com.brooklyn.annoyancemute.soundeffects.OtherPlayersSoundEffect;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
@@ -698,9 +699,14 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.PICKPOCKET_STUN);
 		}
-		if (config.muteMining())
+		if (config.muteMining() && !config.muteMiningOthers())
 		{
 			addGeneric(SoundEffectID.MINING_PICK_SWING_1, SoundEffectID.MINING_PICK_SWING_2);
+		}
+		else if (config.muteMiningOthers())
+		{
+			// when both are enabled, we only mute the sound when another player is doing it
+			addOtherPlayers(SoundEffectID.MINING_PICK_SWING_1, SoundEffectID.MINING_PICK_SWING_2);
 		}
 		if (config.mutePlankMake())
 		{
@@ -710,9 +716,14 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.STRING_JEWELLERY);
 		}
-		if (config.muteWoodcutting())
+		if (config.muteWoodcutting() && !config.muteWoodcuttingOthers())
 		{
 			addGeneric(SoundEffectID.WOODCUTTING_CHOP);
+		}
+		else if (config.muteWoodcuttingOthers())
+		{
+			// when both are enabled, we only mute the sound when another player is doing it
+			addOtherPlayers(SoundEffectID.WOODCUTTING_CHOP);
 		}
 		if (config.muteChargeOrb())
 		{
@@ -1020,6 +1031,14 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 	}
 
+	private void addOtherPlayers(int... soundIds)
+	{
+		for (int soundId : soundIds)
+		{
+			soundEffects.add(new OtherPlayersSoundEffect(soundId, SoundEffectType.EITHER));
+		}
+	}
+
 	private void addAnimation(int soundId, int... animationIds)
 	{
 		for (int animationId : animationIds)
@@ -1117,6 +1136,7 @@ public class AnnoyanceMutePlugin extends Plugin
 
 		// sort the effects for this sound into generics and animations
 		boolean hasGeneric = false;
+		boolean hasOtherPlayers = false;
 		List<AnimationSoundEffect> animationSoundEffects = new ArrayList<>();
 		for (SoundEffect s : candidates)
 		{
@@ -1129,10 +1149,19 @@ public class AnnoyanceMutePlugin extends Plugin
 			{
 				hasGeneric = true;
 			}
+			else if (s instanceof OtherPlayersSoundEffect)
+			{
+				hasOtherPlayers = true;
+			}
 			else if (s instanceof AnimationSoundEffect)
 			{
 				animationSoundEffects.add((AnimationSoundEffect) s);
 			}
+		}
+
+		if (hasOtherPlayers && source instanceof Player && source != client.getLocalPlayer())
+		{
+			return true;
 		}
 
 		if (!hasGeneric && animationSoundEffects.isEmpty())

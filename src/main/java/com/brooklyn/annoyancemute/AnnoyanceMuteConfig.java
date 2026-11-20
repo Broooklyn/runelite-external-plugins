@@ -568,6 +568,17 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "muteWoodcuttingOthers",
+		name = "Woodcutting (only others)",
+		description = "Mutes the sound of other players' Woodcutting",
+		section = skillingSection
+	)
+	default boolean muteWoodcuttingOthers()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "plankMake",
 		name = "Plank Make",
 		description = "Mutes the sound of Plank Make",
@@ -673,6 +684,17 @@ public interface AnnoyanceMuteConfig extends Config
 		section = skillingSection
 	)
 	default boolean muteMining()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+		keyName = "muteMiningOthers",
+		name = "Mining (only others)",
+		description = "Mutes the sounds of other players' Mining",
+		section = skillingSection
+	)
+	default boolean muteMiningOthers()
 	{
 		return false;
 	}

@@ -76,6 +76,43 @@ public class AnnoyanceMuteTests
 	}
 
 	@Test
+	public void muteWoodcuttingOnlyOthers()
+	{
+		Player localPlayer = mock(Player.class);
+		Player otherPlayer = mock(Player.class);
+		when(client.getLocalPlayer()).thenReturn(localPlayer);
+		when(config.muteWoodcutting()).thenReturn(true);
+		when(config.muteWoodcuttingOthers()).thenReturn(true);
+
+		ConfigChanged configChanged = new ConfigChanged();
+		configChanged.setGroup("annoyancemute");
+		configChanged.setKey("muteWoodcuttingOthers");
+		plugin.onConfigChanged(configChanged);
+
+		assertTrue(plugin.shouldMute(SoundEffectID.WOODCUTTING_CHOP, SoundEffectType.AREA_SOUND_EFFECT, otherPlayer));
+		assertFalse(plugin.shouldMute(SoundEffectID.WOODCUTTING_CHOP, SoundEffectType.SOUND_EFFECT, localPlayer));
+		assertFalse(plugin.shouldMute(SoundEffectID.WOODCUTTING_CHOP, SoundEffectType.SOUND_EFFECT, null));
+	}
+
+	@Test
+	public void muteMiningOnlyOthers()
+	{
+		Player localPlayer = mock(Player.class);
+		Player otherPlayer = mock(Player.class);
+		when(client.getLocalPlayer()).thenReturn(localPlayer);
+		when(config.muteMiningOthers()).thenReturn(true);
+
+		ConfigChanged configChanged = new ConfigChanged();
+		configChanged.setGroup("annoyancemute");
+		configChanged.setKey("muteMiningOthers");
+		plugin.onConfigChanged(configChanged);
+
+		assertTrue(plugin.shouldMute(SoundEffectID.MINING_PICK_SWING_1, SoundEffectType.AREA_SOUND_EFFECT, otherPlayer));
+		assertTrue(plugin.shouldMute(SoundEffectID.MINING_PICK_SWING_2, SoundEffectType.AREA_SOUND_EFFECT, otherPlayer));
+		assertFalse(plugin.shouldMute(SoundEffectID.MINING_PICK_SWING_1, SoundEffectType.SOUND_EFFECT, localPlayer));
+	}
+
+	@Test
 	public void muteDemons()
 	{
 		when(config.muteDemons()).thenReturn(false);
