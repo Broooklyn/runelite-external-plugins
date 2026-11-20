@@ -1062,7 +1062,7 @@ public interface AnnoyanceMuteConfig extends Config
 	@ConfigItem(
 		keyName = "soundsToMute",
 		name = "Sounds / Ambient Items",
-		description = "Enter IDs or names of the sounds you wish to mute, separated by commas (e.g. 353 or chaos_elemental_madness_impact).",
+		description = "Enter IDs or names of the sounds you wish to mute, separated by commas.<br>This includes the random sounds inside an ambient sound.<br>e.g. 353 or chaos_elemental_madness_impact",
 		section = customSection,
 		position = 30
 	)
@@ -1074,7 +1074,7 @@ public interface AnnoyanceMuteConfig extends Config
 	@ConfigItem(
 		keyName = "ambientSoundsToMute",
 		name = "Muted Ambient Sound Groups",
-		description = "Enter IDs or names of the ambient sounds you wish to mute, separated by commas. This mutes the whole ambient sound group, including every random sound inside it (e.g. -1 mutes all -1 ambient sounds). Use regionid:soundid or regionid:soundname to mute it only while in that region (e.g. 4020:-1 mutes -1 ambient sounds in region 4020)",
+		description = "Enter IDs or names of the ambient sounds you wish to mute, separated by commas.<br>This mutes the whole ambient sound group, including every random sound inside it.<br>Use regionid:soundid or regionid:soundname to mute it only while in that region.<br>e.g. -1 mutes all -1 ambient sounds<br>e.g. 4020:-1 mutes -1 ambient sounds in region 4020",
 		section = customSection,
 		position = 31
 	)
