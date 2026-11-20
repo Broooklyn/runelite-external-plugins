@@ -75,6 +75,13 @@ public interface AnnoyanceMuteConfig extends Config
 	)
 	String ambientSection = "Ambient";
 
+	@ConfigSection(
+		name = "Custom Mutes",
+		description = "Mute specific sounds by their ID or name",
+		position = 6
+	)
+	String customSection = "Custom Mutes";
+
 	@ConfigItem(
 		keyName = "mutePetSounds",
 		name = "Pets",
@@ -1054,8 +1061,9 @@ public interface AnnoyanceMuteConfig extends Config
 
 	@ConfigItem(
 		keyName = "soundsToMute",
-		name = "Muted Sounds",
-		description = "Enter IDs or names of the sounds you wish to mute, separated by commas (e.g. 353 or chaos_elemental_madness_impact). Names that are not recognised are ignored",
+		name = "Sounds / Ambient Items",
+		description = "Enter IDs or names of the sounds you wish to mute, separated by commas (e.g. 353 or chaos_elemental_madness_impact).",
+		section = customSection,
 		position = 30
 	)
 	default String soundsToMute()
@@ -1065,22 +1073,12 @@ public interface AnnoyanceMuteConfig extends Config
 
 	@ConfigItem(
 		keyName = "ambientSoundsToMute",
-		name = "Muted Ambient Sounds",
-		description = "Enter IDs or names of the ambient sounds you wish to mute everywhere, separated by commas. This mutes the whole ambient sound, including every random sound inside it (e.g. -1 mutes all -1 ambient sounds)",
+		name = "Muted Ambient Sound Groups",
+		description = "Enter IDs or names of the ambient sounds you wish to mute, separated by commas. This mutes the whole ambient sound group, including every random sound inside it (e.g. -1 mutes all -1 ambient sounds). Use regionid:soundid or regionid:soundname to mute it only while in that region (e.g. 4020:-1 mutes -1 ambient sounds in region 4020)",
+		section = customSection,
 		position = 31
 	)
 	default String ambientSoundsToMute()
-	{
-		return "";
-	}
-
-	@ConfigItem(
-		keyName = "ambientSoundsToMuteRegional",
-		name = "Regional Muted Ambient Sounds",
-		description = "Enter IDs or names of the ambient sounds you wish to mute only while in a region, separated by commas, in the format of regionid:soundid or regionid:soundname (e.g. 4020:-1 mutes -1 ambient sounds in region 4020)",
-		position = 32
-	)
-	default String ambientSoundsToMuteRegional()
 	{
 		return "";
 	}
