@@ -9,6 +9,7 @@ import net.runelite.api.Client;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
 import net.runelite.api.Player;
+import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.events.ConfigChanged;
 import java.util.Arrays;
@@ -21,7 +22,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -41,6 +46,10 @@ public class AnnoyanceMuteTests
 	@Bind
 	private AnnoyanceMuteConfig config;
 
+	@Mock
+	@Bind
+	private ConfigManager configManager;
+
 	@Inject
 	private AnnoyanceMutePlugin plugin;
 
@@ -51,7 +60,6 @@ public class AnnoyanceMuteTests
 
 		when(config.soundsToMute()).thenReturn("");
 		when(config.ambientSoundsToMute()).thenReturn("");
-		when(config.ambientSoundsToMuteRegional()).thenReturn("");
 	}
 
 	@Test
@@ -266,10 +274,34 @@ public class AnnoyanceMuteTests
 	@Test
 	public void regionalMutedAmbientSoundsAcceptIdsAndNames()
 	{
-		when(config.ambientSoundsToMuteRegional()).thenReturn("4020:chaos_elemental_madness_impact,4021:12,4022:nope,nope:353,4023,1:2:3");
+		when(config.ambientSoundsToMute()).thenReturn("4020:chaos_elemental_madness_impact,4021:12,4022:nope,nope:353,4023,1:2:3,12,353");
 		List<int[]> regional = plugin.getRegionalAmbientSounds();
 		assertEquals(2, regional.size());
 		assertArrayEquals(new int[]{4020, 353}, regional.get(0));
 		assertArrayEquals(new int[]{4021, 12}, regional.get(1));
+
+		// entries without a region are everywhere ambient sounds, the regional ones are not
+		assertEquals(Arrays.asList(4023, 12, 353), plugin.getGenericAmbientSounds());
+	}
+
+	@Test
+	public void migrateMovesRegionalAmbientSoundsIntoAmbientSounds()
+	{
+		when(config.ambientSoundsToMute()).thenReturn("12, 4020:353");
+		when(configManager.getConfiguration("annoyancemute", "ambientSoundsToMuteRegional")).thenReturn("4020:353,4021:12");
+
+		plugin.migrate();
+
+		verify(configManager).setConfiguration("annoyancemute", "ambientSoundsToMute", "12,4020:353,4021:12");
+		verify(configManager).unsetConfiguration("annoyancemute", "ambientSoundsToMuteRegional");
+	}
+
+	@Test
+	public void migrateDoesNothingWithoutRegionalAmbientSounds()
+	{
+		plugin.migrate();
+
+		verify(configManager, never()).setConfiguration(any(), any(), anyString());
+		verify(configManager, never()).unsetConfiguration(any(), any());
 	}
 }

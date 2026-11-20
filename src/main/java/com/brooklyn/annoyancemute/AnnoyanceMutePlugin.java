@@ -104,6 +104,9 @@ public class AnnoyanceMutePlugin extends Plugin
 		BURGH_TELEPORT_ANIMATION
 	};
 
+	private static final String CONFIG_GROUP = "annoyancemute";
+	private static final String LEGACY_REGIONAL_KEY = "ambientSoundsToMuteRegional";
+
 	@Inject
 	private Client client;
 
@@ -112,6 +115,9 @@ public class AnnoyanceMutePlugin extends Plugin
 
 	@Inject
 	private AnnoyanceMuteConfig config;
+
+	@Inject
+	private ConfigManager configManager;
 
 	@Inject
 	private Gson gson;
@@ -171,6 +177,7 @@ public class AnnoyanceMutePlugin extends Plugin
 	@Override
 	public void startUp()
 	{
+		migrate();
 		setUpMutes();
 		reloadScene();
 	}
@@ -203,7 +210,6 @@ public class AnnoyanceMutePlugin extends Plugin
 				case "muteFortisColosseum":
 				case "muteStranglewoodHowls":
 				case "ambientSoundsToMute":
-				case "ambientSoundsToMuteRegional":
 					reloadScene();
 					break;
 				case "soundsToMute":
@@ -1154,20 +1160,40 @@ public class AnnoyanceMutePlugin extends Plugin
 		return resolveSoundIds(config.soundsToMute());
 	}
 
-	// Every entry of the "Muted Ambient Sounds" config as a sound id. An entry is an id or a sound name,
-	// anything else is ignored
+	// Every plain entry of the "Muted Ambient Sound Groups" config as a sound id. An entry is an id or a sound name,
+	// anything else is ignored. Entries with a region (regionid:sound) are in getRegionalAmbientSounds
 	public List<Integer> getGenericAmbientSounds()
 	{
-		return new ArrayList<>(resolveSoundIds(config.ambientSoundsToMute()));
+		Set<Integer> soundIds = new LinkedHashSet<>();
+		for (String str : Text.fromCSV(config.ambientSoundsToMute()))
+		{
+			if (str.contains(":"))
+			{
+				continue;
+			}
+
+			Integer soundId = getSoundNames().resolveSoundId(str);
+			if (soundId != null)
+			{
+				soundIds.add(soundId);
+			}
+		}
+
+		return new ArrayList<>(soundIds);
 	}
 
-	// Every entry of the "Regional Muted Ambient Sounds" config as {regionId, soundId}. An entry is regionid:soundid
-	// or regionid:soundname, anything else is ignored
+	// Every regionid:soundid or regionid:soundname entry of the "Muted Ambient Sound Groups" config as
+	// {regionId, soundId}, anything else is ignored
 	public List<int[]> getRegionalAmbientSounds()
 	{
 		List<int[]> returnValues = new ArrayList<>();
-		for (String str : Text.fromCSV(config.ambientSoundsToMuteRegional()))
+		for (String str : Text.fromCSV(config.ambientSoundsToMute()))
 		{
+			if (!str.contains(":"))
+			{
+				continue;
+			}
+
 			String[] parts = str.split(":");
 			if (parts.length != 2)
 			{
@@ -1183,6 +1209,26 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 
 		return returnValues;
+	}
+
+	// The regional ambient sounds used to be in their own config. Move them into the ambient sounds config
+	// so nobody loses their settings, then remove the old config
+	@VisibleForTesting
+	void migrate()
+	{
+		String regional = configManager.getConfiguration(CONFIG_GROUP, LEGACY_REGIONAL_KEY);
+		if (regional == null)
+		{
+			return;
+		}
+
+		Set<String> merged = new LinkedHashSet<>(Text.fromCSV(config.ambientSoundsToMute()));
+		merged.addAll(Text.fromCSV(regional));
+		if (!merged.isEmpty())
+		{
+			configManager.setConfiguration(CONFIG_GROUP, "ambientSoundsToMute", Text.toCSV(merged));
+		}
+		configManager.unsetConfiguration(CONFIG_GROUP, LEGACY_REGIONAL_KEY);
 	}
 
 	public SoundNames getSoundNames()

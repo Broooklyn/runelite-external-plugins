@@ -127,7 +127,9 @@ Mutes the sound of the Wilderness Obelisk's teleport _EEEEEEE_.
 Use Visual Sounds plugin to identify the Ambient Sounds. 
 Use World Location plugin to identify region (if you want to use region base ambient muting)
 
-Format for Regional muting is "101:123" meaning in region 101, mute soundid 123.
+To mute an ambient sound only in one region, enter "101:123" in Muted Ambient Sound Groups, meaning in region 101, mute soundid 123.
+To mute an individual random sound within an ambient sound group add the id or name to Sounds / Ambient Items.
+
 
 ***
 If you have any suggestions for other sounds to mute, open an issue above.
