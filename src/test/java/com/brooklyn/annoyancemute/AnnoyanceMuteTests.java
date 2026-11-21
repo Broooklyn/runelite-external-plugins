@@ -293,6 +293,24 @@ public class AnnoyanceMuteTests
 	}
 
 	@Test
+	public void mutedSoundsAcceptWildcardNames()
+	{
+		when(config.soundsToMute()).thenReturn("Stone_Armour*");
+		configChanged();
+		// stone_armour1..5
+		for (int id : new int[]{31, 32, 33, 2846, 2847})
+		{
+			assertTrue(plugin.shouldMute(id, SoundEffectType.EITHER, null));
+		}
+		assertFalse(plugin.shouldMute(353, SoundEffectType.EITHER, null));
+
+		// a lone * or an unknown prefix matches nothing
+		when(config.soundsToMute()).thenReturn("*, not_a_real_sound*");
+		configChanged();
+		assertFalse(plugin.shouldMute(31, SoundEffectType.EITHER, null));
+	}
+
+	@Test
 	public void mutedSoundsIgnoreInvalidNames()
 	{
 		when(config.soundsToMute()).thenReturn("not_a_real_sound,,  ,353:,chaos_elemental_madness_impact");

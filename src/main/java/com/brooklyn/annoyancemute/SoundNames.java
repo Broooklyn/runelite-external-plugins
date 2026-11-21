@@ -9,7 +9,9 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
 
@@ -68,6 +70,43 @@ public class SoundNames
 		{
 			return getSoundIds().get(trimmed.toLowerCase());
 		}
+	}
+
+	/**
+	 * Like {@link #resolveSoundId}, but a name ending in * matches every sound name that starts with what is in front
+	 * of the *, e.g. stone_armour* is stone_armour1, stone_armour2 and so on.
+	 *
+	 * @return the matching ids, empty when the entry is neither a number nor a known name
+	 */
+	public Set<Integer> resolveSoundIds(@Nullable String entry)
+	{
+		if (entry == null)
+		{
+			return Collections.emptySet();
+		}
+
+		String trimmed = entry.trim();
+		if (!trimmed.endsWith("*"))
+		{
+			Integer id = resolveSoundId(trimmed);
+			return id == null ? Collections.emptySet() : Collections.singleton(id);
+		}
+
+		String prefix = trimmed.substring(0, trimmed.length() - 1).toLowerCase();
+		if (prefix.isEmpty())
+		{
+			return Collections.emptySet();
+		}
+
+		Set<Integer> ids = new LinkedHashSet<>();
+		for (Map.Entry<String, Integer> name : getSoundIds().entrySet())
+		{
+			if (name.getValue() != null && name.getKey().toLowerCase().startsWith(prefix))
+			{
+				ids.add(name.getValue());
+			}
+		}
+		return ids;
 	}
 
 	@Nullable

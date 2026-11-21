@@ -1084,7 +1084,7 @@ public interface AnnoyanceMuteConfig extends Config
 	@ConfigItem(
 		keyName = "soundsToMute",
 		name = "Sounds / Ambient Items",
-		description = "Enter IDs or names of the sounds you wish to mute, separated by commas.<br>This includes the random sounds inside an ambient sound.<br>e.g. 353 or chaos_elemental_madness_impact",
+		description = "Enter IDs or names of the sounds you wish to mute, separated by commas.<br>This includes the random sounds inside an ambient sound.<br>End a name with * to match every sound starting with it.<br>e.g. 353, chaos_elemental_madness_impact or stone_armour*",
 		section = customSection,
 		position = 30
 	)

@@ -211,15 +211,8 @@ public class AnnoyanceMutePlugin extends Plugin
 				case "muteFortisColosseum":
 				case "muteStranglewoodHowls":
 				case "ambientSoundsToMute":
-					reloadScene();
-					break;
 				case "soundsToMute":
-					// put the removed ambient sounds back, then take out the new selection
-					clientThread.invoke(() ->
-					{
-						restoreAmbientSoundRandomSounds();
-						muteAmbientSounds();
-					});
+					reloadScene();
 					break;
 				default:
 					if (configChanged.getKey().startsWith("muteNewAmbient"))
@@ -1279,11 +1272,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		Set<Integer> soundIds = new LinkedHashSet<>();
 		for (String entry : Text.fromCSV(configSounds))
 		{
-			Integer soundId = getSoundNames().resolveSoundId(entry);
-			if (soundId != null)
-			{
-				soundIds.add(soundId);
-			}
+			soundIds.addAll(getSoundNames().resolveSoundIds(entry));
 		}
 
 		return soundIds;
