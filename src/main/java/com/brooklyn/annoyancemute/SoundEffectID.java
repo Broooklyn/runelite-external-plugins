@@ -132,6 +132,10 @@ public final class SoundEffectID
 	// Fletching
 	protected final static int FLETCHING_CUT = net.runelite.api.gameval.SoundEffectID.FLETCH;
 	protected final static int AMETHYST_FLETCHING = net.runelite.api.gameval.SoundEffectID.CHISEL;
+	protected final static int STRING_BOW_PLUCK_STRING = net.runelite.api.gameval.SoundEffectID.STRING_BOW_PLUCK_STRING;
+	protected final static int STRING_BOW_PULL_STRING = net.runelite.api.gameval.SoundEffectID.STRING_BOW_PULL_STRING;
+	protected final static int STRING_BOW_TENSION_STRING = net.runelite.api.gameval.SoundEffectID.STRING_BOW_TENSION_STRING;
+	protected final static int STRING_BOW_TIE_STRING = net.runelite.api.gameval.SoundEffectID.STRING_BOW_TIE_STRING;
 
 	// Fishing
 	protected final static int FISHING_SOUND = net.runelite.api.gameval.SoundEffectID.FISHING_CAST;
