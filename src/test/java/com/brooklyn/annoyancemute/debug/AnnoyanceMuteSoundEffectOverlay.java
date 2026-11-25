@@ -22,7 +22,6 @@ import net.runelite.client.ui.overlay.components.LineComponent;
 
 class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 {
-	private final static int MAX_LINES = 10;
 	private final static Color COLOR_SOUND_EFFECT = Color.WHITE;
 	private final static Color COLOR_AREA_SOUND_EFFECT = Color.YELLOW;
 	private final static Color COLOR_SILENT_SOUND_EFFECT = Color.GRAY;
@@ -78,6 +77,10 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 
 		if (plugin.shouldMute(soundId, SoundEffectType.SOUND_EFFECT, event.getSource()))
 		{
+			if (config.hideConsumedSounds())
+			{
+				return;
+			}
 			action = CONSUMED;
 			actionColor = COLOR_CONSUMED;
 		}
@@ -119,6 +122,10 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 				int distance = Math.abs(sceneX - event.getSceneX()) + Math.abs(sceneY - event.getSceneY());
 				if (distance > event.getRange())
 				{
+					if (config.hideSilentAreaSounds())
+					{
+						return;
+					}
 					textColor = COLOR_SILENT_SOUND_EFFECT;
 					text = "SA: " + soundLabel(plugin.getSoundNames(), soundId);
 				}
@@ -127,6 +134,10 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 
 		if (plugin.shouldMute(soundId, SoundEffectType.AREA_SOUND_EFFECT, event.getSource()))
 		{
+			if (config.hideConsumedSounds())
+			{
+				return;
+			}
 			action = CONSUMED;
 			actionColor = COLOR_CONSUMED;
 		}
@@ -159,7 +170,8 @@ class AnnoyanceMuteSoundEffectOverlay extends OverlayPanel
 
 	private void checkMaxLines()
 	{
-		while (panelComponent.getChildren().size() > MAX_LINES)
+		// the first child is the title, the rest are sounds
+		while (panelComponent.getChildren().size() > config.maxSoundEffectLines() + 1)
 		{
 			panelComponent.getChildren().remove(1);
 		}
