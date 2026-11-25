@@ -1247,8 +1247,8 @@ public class AnnoyanceMutePlugin extends Plugin
 		migrateRegionalAmbientSounds();
 		migrateTeleportMode();
 		migrateHumidifyMode();
-		migrateMuteAll("muteMining");
-		migrateMuteAll("muteWoodcutting");
+		migrateMuteAll("muteMining", "muteMiningMode");
+		migrateMuteAll("muteWoodcutting", "muteWoodcuttingMode");
 	}
 
 	// Teleport used to be two checkboxes, "Teleport" and "Teleport (only others)", it is now a single Off / Only Others / All option
@@ -1257,23 +1257,28 @@ public class AnnoyanceMutePlugin extends Plugin
 	{
 		String all = configManager.getConfiguration(CONFIG_GROUP, "muteTeleport");
 		String others = configManager.getConfiguration(CONFIG_GROUP, "muteTeleportOthers");
-		boolean legacyAll = "true".equals(all) || "false".equals(all);
-		if (!legacyAll && others == null)
+
+		if (all == null || others == null)
 		{
 			return;
 		}
 
+		boolean legacyAll = Boolean.parseBoolean(all);
+		boolean legacyOthers = Boolean.parseBoolean(others);
+
 		MuteMode mode = MuteMode.OFF;
-		if (!"false".equals(others))
+
+		if (legacyOthers)
 		{
 			mode = MuteMode.ONLY_OTHERS;
 		}
-		else if ("true".equals(all))
+		else if (legacyAll)
 		{
 			mode = MuteMode.ALL;
 		}
 
-		configManager.setConfiguration(CONFIG_GROUP, "muteTeleport", mode);
+		configManager.setConfiguration(CONFIG_GROUP, "muteTeleportMode", mode);
+		configManager.unsetConfiguration(CONFIG_GROUP, "muteTeleport");
 		configManager.unsetConfiguration(CONFIG_GROUP, "muteTeleportOthers");
 	}
 
@@ -1284,38 +1289,49 @@ public class AnnoyanceMutePlugin extends Plugin
 	{
 		String all = configManager.getConfiguration(CONFIG_GROUP, "muteAreaOfEffectSpells");
 		String others = configManager.getConfiguration(CONFIG_GROUP, "muteOthersHumidfy");
-		boolean legacyAll = "true".equals(all) || "false".equals(all);
-		if (!legacyAll && others == null)
+		if (all == null || others == null)
 		{
 			return;
 		}
 
+		boolean legacyAll = Boolean.parseBoolean(all);
+		boolean legacyOthers = Boolean.parseBoolean(others);
+
 		MuteMode mode = MuteMode.OFF;
-		if (!"false".equals(all))
+
+		if (legacyAll)
 		{
 			mode = MuteMode.ALL;
 		}
-		else if (!"false".equals(others))
+		else if (legacyOthers)
 		{
 			mode = MuteMode.ONLY_OTHERS;
 		}
 
-		configManager.setConfiguration(CONFIG_GROUP, "muteAreaOfEffectSpells", mode);
+		configManager.setConfiguration(CONFIG_GROUP, "muteHumidifyMode", mode);
+		configManager.unsetConfiguration(CONFIG_GROUP, "muteAreaOfEffectSpells");
 		configManager.unsetConfiguration(CONFIG_GROUP, "muteOthersHumidfy");
 	}
 
 	// Mining and woodcutting used to be a plain checkbox under the same key, enabled meant muting everything
-	private void migrateMuteAll(String key)
+	private void migrateMuteAll(String oldKey, String newKey)
 	{
-		String value = configManager.getConfiguration(CONFIG_GROUP, key);
+		String value = configManager.getConfiguration(CONFIG_GROUP, oldKey);
+		if (value == null)
+		{
+			return;
+		}
 		if ("true".equals(value))
 		{
-			configManager.setConfiguration(CONFIG_GROUP, key, MuteMode.ALL);
+			configManager.setConfiguration(CONFIG_GROUP, newKey, MuteMode.ALL);
 		}
 		else if ("false".equals(value))
 		{
-			configManager.setConfiguration(CONFIG_GROUP, key, MuteMode.OFF);
+			configManager.setConfiguration(CONFIG_GROUP, newKey, MuteMode.OFF);
 		}
+
+		configManager.unsetConfiguration(CONFIG_GROUP, oldKey);
+
 	}
 
 	private void migrateRegionalAmbientSounds()

@@ -94,7 +94,7 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "muteAreaOfEffectSpells",
+		keyName = "muteHumidifyMode",
 		name = "Humidify",
 		description = "Mutes the humidify spell sound",
 		section = skillingSection
@@ -535,7 +535,7 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "muteWoodcutting",
+		keyName = "muteWoodcuttingMode",
 		name = "Woodcutting",
 		description = "Mutes the sound of Woodcutting",
 		section = skillingSection
@@ -645,7 +645,7 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "muteMining",
+		keyName = "muteMiningMode",
 		name = "Mining",
 		description = "Mutes the sounds of Mining",
 		section = skillingSection
