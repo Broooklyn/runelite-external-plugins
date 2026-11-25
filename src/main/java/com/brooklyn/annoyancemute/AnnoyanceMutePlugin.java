@@ -28,6 +28,7 @@ import com.brooklyn.annoyancemute.soundeffects.AnimationSoundEffect;
 import com.brooklyn.annoyancemute.soundeffects.AmbientSoundEffect;
 import com.brooklyn.annoyancemute.soundeffects.SoundEffect;
 import com.brooklyn.annoyancemute.soundeffects.GenericSoundEffect;
+import com.brooklyn.annoyancemute.soundeffects.OtherPlayersSoundEffect;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
@@ -61,6 +62,7 @@ import net.runelite.api.events.AmbientSoundChanged;
 import net.runelite.api.events.AmbientSoundEffectCreated;
 import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.gameval.AmbientSoundID;
+import net.runelite.api.gameval.AnimationID;
 import net.runelite.api.gameval.ObjectID;
 import net.runelite.api.gameval.VarbitID;
 import net.runelite.api.events.AreaSoundEffectPlayed;
@@ -93,6 +95,10 @@ public class AnnoyanceMutePlugin extends Plugin
 	private static final int ARDOUGNE_TELEPORT_ANIMATION = 3872;
 	private static final int BURGH_TELEPORT_ANIMATION = 3874;
 
+	// not sure what VFX is but the first one is for sure right
+	private static final int ROYAL_TITANS_TELEPORT_ANIMATION1 = AnimationID.HUMAN_TELEPORT_GIANTSOUL_AMULET_01;
+	private static final int ROYAL_TITANS_TELEPORT_ANIMATION2 = AnimationID.VFX_HUMAN_TELEPORT_GIANTSOUL_AMULET_01;
+
 	private static final int[] TELEPORT_ANIMATIONS = {
 		NORMAL_TELEPORT_ANIMATION,
 		LUNAR_TELEPORT_ANIMATION,
@@ -101,7 +107,9 @@ public class AnnoyanceMutePlugin extends Plugin
 		WILDERNESS_TELEPORT_ANIMATION,
 		CABBAGE_TELEPORT_ANIMATION,
 		ARDOUGNE_TELEPORT_ANIMATION,
-		BURGH_TELEPORT_ANIMATION
+		BURGH_TELEPORT_ANIMATION,
+		ROYAL_TITANS_TELEPORT_ANIMATION1,
+		ROYAL_TITANS_TELEPORT_ANIMATION2,
 	};
 
 	private static final String CONFIG_GROUP = "annoyancemute";
@@ -210,15 +218,8 @@ public class AnnoyanceMutePlugin extends Plugin
 				case "muteFortisColosseum":
 				case "muteStranglewoodHowls":
 				case "ambientSoundsToMute":
-					reloadScene();
-					break;
 				case "soundsToMute":
-					// put the removed ambient sounds back, then take out the new selection
-					clientThread.invoke(() ->
-					{
-						restoreAmbientSoundRandomSounds();
-						muteAmbientSounds();
-					});
+					reloadScene();
 					break;
 				default:
 					if (configChanged.getKey().startsWith("muteNewAmbient"))
@@ -674,19 +675,23 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.FIREMAKING_LOG_BURN, SoundEffectID.FIREMAKING_LOG_LIGHT);
 		}
-		if (config.muteFishing())
+		if (config.muteFishingMode() == MuteMode.ALL)
 		{
 			addGeneric(SoundEffectID.FISHING_SOUND);
+		}
+		else if (config.muteFishingMode() == MuteMode.ONLY_OTHERS)
+		{
+			addOtherPlayers(SoundEffectID.FISHING_SOUND);
 		}
 		if (config.muteFletching())
 		{
 			addGeneric(SoundEffectID.FLETCHING_CUT, SoundEffectID.AMETHYST_FLETCHING);
 		}
-		if (config.muteAOESounds())
+		if (config.muteHumidifyMode() == MuteMode.ALL)
 		{
 			addGeneric(SoundEffectID.HUMIDIFY_SOUND);
 		}
-		else if (config.muteOthersHumidify())
+		else if (config.muteHumidifyMode() == MuteMode.ONLY_OTHERS)
 		{
 			addAnimation(SoundEffectID.HUMIDIFY_SOUND, DREAM_PLAYER_HUMIDIFY_SPELL);
 		}
@@ -698,9 +703,13 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.PICKPOCKET_STUN);
 		}
-		if (config.muteMining())
+		if (config.muteMiningMode() == MuteMode.ALL)
 		{
 			addGeneric(SoundEffectID.MINING_PICK_SWING_1, SoundEffectID.MINING_PICK_SWING_2);
+		}
+		else if (config.muteMiningMode() == MuteMode.ONLY_OTHERS)
+		{
+			addOtherPlayers(SoundEffectID.MINING_PICK_SWING_1, SoundEffectID.MINING_PICK_SWING_2);
 		}
 		if (config.mutePlankMake())
 		{
@@ -710,9 +719,13 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.STRING_JEWELLERY);
 		}
-		if (config.muteWoodcutting())
+		if (config.muteWoodcuttingMode() == MuteMode.ALL)
 		{
 			addGeneric(SoundEffectID.WOODCUTTING_CHOP);
+		}
+		else if (config.muteWoodcuttingMode() == MuteMode.ONLY_OTHERS)
+		{
+			addOtherPlayers(SoundEffectID.WOODCUTTING_CHOP);
 		}
 		if (config.muteChargeOrb())
 		{
@@ -871,14 +884,15 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.TELEOTHER);
 		}
-		if (config.muteTeleport() && !config.muteTeleportOthers())
+		if (config.muteTeleportMode() == MuteMode.ALL)
 		{
-			addGeneric(SoundEffectID.TELEPORT_VWOOP);
+			addGeneric(SoundEffectID.TELEPORT_VWOOP, SoundEffectID.TWIN_GIANT_SOUL_AMULET_TELEPORT1, SoundEffectID.TWIN_GIANT_SOUL_AMULET_TELEPORT2);
 		}
-		else if (config.muteTeleportOthers())
+		else if (config.muteTeleportMode() == MuteMode.ONLY_OTHERS)
 		{
-			// when both are enabled, we only mute the sound when another player is doing it
 			addAnimation(SoundEffectID.TELEPORT_VWOOP, TELEPORT_ANIMATIONS);
+			addAnimation(SoundEffectID.TWIN_GIANT_SOUL_AMULET_TELEPORT1, TELEPORT_ANIMATIONS);
+			addAnimation(SoundEffectID.TWIN_GIANT_SOUL_AMULET_TELEPORT2, TELEPORT_ANIMATIONS);
 		}
 		if (config.muteRubberChickenSounds())
 		{
@@ -1020,6 +1034,14 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 	}
 
+	private void addOtherPlayers(int... soundIds)
+	{
+		for (int soundId : soundIds)
+		{
+			soundEffects.add(new OtherPlayersSoundEffect(soundId, SoundEffectType.EITHER));
+		}
+	}
+
 	private void addAnimation(int soundId, int... animationIds)
 	{
 		for (int animationId : animationIds)
@@ -1117,6 +1139,7 @@ public class AnnoyanceMutePlugin extends Plugin
 
 		// sort the effects for this sound into generics and animations
 		boolean hasGeneric = false;
+		boolean hasOtherPlayers = false;
 		List<AnimationSoundEffect> animationSoundEffects = new ArrayList<>();
 		for (SoundEffect s : candidates)
 		{
@@ -1129,10 +1152,21 @@ public class AnnoyanceMutePlugin extends Plugin
 			{
 				hasGeneric = true;
 			}
+			else if (s instanceof OtherPlayersSoundEffect)
+			{
+				hasOtherPlayers = true;
+			}
 			else if (s instanceof AnimationSoundEffect)
 			{
 				animationSoundEffects.add((AnimationSoundEffect) s);
 			}
+		}
+
+		// "only others" sounds are sometimes played without a source when another player makes them,
+		// so anything that is not the local player counts as someone else
+		if (hasOtherPlayers && source != client.getLocalPlayer())
+		{
+			return true;
 		}
 
 		if (!hasGeneric && animationSoundEffects.isEmpty())
@@ -1216,6 +1250,103 @@ public class AnnoyanceMutePlugin extends Plugin
 	@VisibleForTesting
 	void migrate()
 	{
+		migrateRegionalAmbientSounds();
+		migrateTeleportMode();
+		migrateHumidifyMode();
+		migrateMuteAll("muteMining", "muteMiningMode");
+		migrateMuteAll("muteWoodcutting", "muteWoodcuttingMode");
+		migrateMuteAll("muteFishing", "muteFishingMode");
+	}
+
+	// Teleport used to be two checkboxes, "Teleport" and "Teleport (only others)", it is now a single Off / Only Others / All option
+	// that reuses the "muteTeleport" key. Unchanged values are not stored, so a missing value means the old default (all: off, only others: on)
+	private void migrateTeleportMode()
+	{
+		String all = configManager.getConfiguration(CONFIG_GROUP, "muteTeleport");
+		String others = configManager.getConfiguration(CONFIG_GROUP, "muteTeleportOthers");
+
+		// unchanged values are not stored, so only skip when neither was ever changed
+		if (all == null && others == null)
+		{
+			return;
+		}
+
+		// a missing value means the old default: Teleport off, only others on
+		boolean legacyAll = all != null && Boolean.parseBoolean(all);
+		boolean legacyOthers = others == null || Boolean.parseBoolean(others);
+
+		MuteMode mode = MuteMode.OFF;
+
+		if (legacyOthers)
+		{
+			mode = MuteMode.ONLY_OTHERS;
+		}
+		else if (legacyAll)
+		{
+			mode = MuteMode.ALL;
+		}
+
+		configManager.setConfiguration(CONFIG_GROUP, "muteTeleportMode", mode);
+		configManager.unsetConfiguration(CONFIG_GROUP, "muteTeleport");
+		configManager.unsetConfiguration(CONFIG_GROUP, "muteTeleportOthers");
+	}
+
+	// Humidify used to be two checkboxes, "Humidify" and "Humidify (only others)", it is now a single Off / Only Others / All option
+	// that reuses the "muteAreaOfEffectSpells" key. Unchanged values are not stored, so a missing value means the old default (both on).
+	// "Humidify" took priority when both were on, so that is checked first
+	private void migrateHumidifyMode()
+	{
+		String all = configManager.getConfiguration(CONFIG_GROUP, "muteAreaOfEffectSpells");
+		String others = configManager.getConfiguration(CONFIG_GROUP, "muteOthersHumidfy");
+		// unchanged values are not stored, so only skip when neither was ever changed
+		if (all == null && others == null)
+		{
+			return;
+		}
+
+		// a missing value means the old default: both on
+		boolean legacyAll = all == null || Boolean.parseBoolean(all);
+		boolean legacyOthers = others == null || Boolean.parseBoolean(others);
+
+		MuteMode mode = MuteMode.OFF;
+
+		if (legacyAll)
+		{
+			mode = MuteMode.ALL;
+		}
+		else if (legacyOthers)
+		{
+			mode = MuteMode.ONLY_OTHERS;
+		}
+
+		configManager.setConfiguration(CONFIG_GROUP, "muteHumidifyMode", mode);
+		configManager.unsetConfiguration(CONFIG_GROUP, "muteAreaOfEffectSpells");
+		configManager.unsetConfiguration(CONFIG_GROUP, "muteOthersHumidfy");
+	}
+
+	// Mining, woodcutting and fishing used to be a plain checkbox under the same key, enabled meant muting everything
+	private void migrateMuteAll(String oldKey, String newKey)
+	{
+		String value = configManager.getConfiguration(CONFIG_GROUP, oldKey);
+		if (value == null)
+		{
+			return;
+		}
+		if ("true".equals(value))
+		{
+			configManager.setConfiguration(CONFIG_GROUP, newKey, MuteMode.ALL);
+		}
+		else if ("false".equals(value))
+		{
+			configManager.setConfiguration(CONFIG_GROUP, newKey, MuteMode.OFF);
+		}
+
+		configManager.unsetConfiguration(CONFIG_GROUP, oldKey);
+
+	}
+
+	private void migrateRegionalAmbientSounds()
+	{
 		String regional = configManager.getConfiguration(CONFIG_GROUP, LEGACY_REGIONAL_KEY);
 		if (regional == null)
 		{
@@ -1250,11 +1381,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		Set<Integer> soundIds = new LinkedHashSet<>();
 		for (String entry : Text.fromCSV(configSounds))
 		{
-			Integer soundId = getSoundNames().resolveSoundId(entry);
-			if (soundId != null)
-			{
-				soundIds.add(soundId);
-			}
+			soundIds.addAll(getSoundNames().resolveSoundIds(entry));
 		}
 
 		return soundIds;

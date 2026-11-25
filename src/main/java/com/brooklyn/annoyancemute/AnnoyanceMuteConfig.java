@@ -94,25 +94,14 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "muteAreaOfEffectSpells",
+		keyName = "muteHumidifyMode",
 		name = "Humidify",
-		description = "Mutes humidify spell sound",
+		description = "Mutes the humidify spell sound",
 		section = skillingSection
 	)
-	default boolean muteAOESounds()
+	default MuteMode muteHumidifyMode()
 	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "muteOthersHumidfy",
-		name = "Humidify (only others)",
-		description = "Mutes the sound of other players' humidify",
-		section = skillingSection
-	)
-	default boolean muteOthersHumidify()
-	{
-		return true;
+		return MuteMode.ALL;
 	}
 
 	@ConfigItem(
@@ -292,25 +281,14 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "muteTeleport",
+		keyName = "muteTeleportMode",
 		name = "Teleport",
-		description = "Mutes the teleport vwoop sound",
+		description = "Mutes the teleport sounds",
 		section = miscSection
 	)
-	default boolean muteTeleport()
+	default MuteMode muteTeleportMode()
 	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteTeleportOthers",
-		name = "Teleport (only others)",
-		description = "Mutes the sound of other players' teleports",
-		section = miscSection
-	)
-	default boolean muteTeleportOthers()
-	{
-		return true;
+		return MuteMode.ONLY_OTHERS;
 	}
 
 	@ConfigItem(
@@ -557,14 +535,14 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "muteWoodcutting",
+		keyName = "muteWoodcuttingMode",
 		name = "Woodcutting",
 		description = "Mutes the sound of Woodcutting",
 		section = skillingSection
 	)
-	default boolean muteWoodcutting()
+	default MuteMode muteWoodcuttingMode()
 	{
-		return true;
+		return MuteMode.ALL;
 	}
 
 	@ConfigItem(
@@ -645,14 +623,14 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "muteFishing",
+		keyName = "muteFishingMode",
 		name = "Fishing",
 		description = "Mutes the sound of Fishing",
 		section = skillingSection
 	)
-	default boolean muteFishing()
+	default MuteMode muteFishingMode()
 	{
-		return true;
+		return MuteMode.ALL;
 	}
 
 	@ConfigItem(
@@ -667,14 +645,14 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "muteMining",
+		keyName = "muteMiningMode",
 		name = "Mining",
 		description = "Mutes the sounds of Mining",
 		section = skillingSection
 	)
-	default boolean muteMining()
+	default MuteMode muteMiningMode()
 	{
-		return false;
+		return MuteMode.OFF;
 	}
 
 	@ConfigItem(
@@ -1062,7 +1040,7 @@ public interface AnnoyanceMuteConfig extends Config
 	@ConfigItem(
 		keyName = "soundsToMute",
 		name = "Sounds / Ambient Items",
-		description = "Enter IDs or names of the sounds you wish to mute, separated by commas (e.g. 353 or chaos_elemental_madness_impact).",
+		description = "Enter IDs or names of the sounds you wish to mute, separated by commas.<br>This includes the random sounds inside an ambient sound.<br>End a name with * to match every sound starting with it.<br>e.g. 353, chaos_elemental_madness_impact or stone_armour*",
 		section = customSection,
 		position = 30
 	)
@@ -1074,7 +1052,7 @@ public interface AnnoyanceMuteConfig extends Config
 	@ConfigItem(
 		keyName = "ambientSoundsToMute",
 		name = "Muted Ambient Sound Groups",
-		description = "Enter IDs or names of the ambient sounds you wish to mute, separated by commas. This mutes the whole ambient sound group, including every random sound inside it (e.g. -1 mutes all -1 ambient sounds). Use regionid:soundid or regionid:soundname to mute it only while in that region (e.g. 4020:-1 mutes -1 ambient sounds in region 4020)",
+		description = "Enter IDs or names of the ambient sounds you wish to mute, separated by commas.<br>This mutes the whole ambient sound group, including every random sound inside it.<br>Use regionid:soundid or regionid:soundname to mute it only while in that region.<br>e.g. -1 mutes all -1 ambient sounds<br>e.g. 4020:-1 mutes -1 ambient sounds in region 4020",
 		section = customSection,
 		position = 31
 	)

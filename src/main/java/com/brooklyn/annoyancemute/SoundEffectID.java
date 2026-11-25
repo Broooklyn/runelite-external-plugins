@@ -180,6 +180,8 @@ public final class SoundEffectID
 
 	// Teleport
 	protected static final int TELEPORT_VWOOP = net.runelite.api.gameval.SoundEffectID.TELEPORT_ALL;
+	protected static final int TWIN_GIANT_SOUL_AMULET_TELEPORT1 = net.runelite.api.gameval.SoundEffectID.RT_TWIN_GIANT_SOUL_AMULET_TELEPORT_01;
+	protected static final int TWIN_GIANT_SOUL_AMULET_TELEPORT2 = net.runelite.api.gameval.SoundEffectID.RT_TWIN_GIANT_SOUL_AMULET_TELEPORT_02;
 
 	// Teleother
 	protected static final int TELEOTHER = net.runelite.api.gameval.SoundEffectID.TELE_OTHER_CAST;
