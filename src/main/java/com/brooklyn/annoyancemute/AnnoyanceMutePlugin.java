@@ -683,11 +683,11 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.FLETCHING_CUT, SoundEffectID.AMETHYST_FLETCHING);
 		}
-		if (config.muteAOESounds())
+		if (config.muteHumidifyMode() == MuteMode.ALL)
 		{
 			addGeneric(SoundEffectID.HUMIDIFY_SOUND);
 		}
-		else if (config.muteOthersHumidify())
+		else if (config.muteHumidifyMode() == MuteMode.ONLY_OTHERS)
 		{
 			addAnimation(SoundEffectID.HUMIDIFY_SOUND, DREAM_PLAYER_HUMIDIFY_SPELL);
 		}
@@ -699,13 +699,12 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.PICKPOCKET_STUN);
 		}
-		if (config.muteMining() && !config.muteMiningOthers())
+		if (config.muteMiningMode() == MuteMode.ALL)
 		{
 			addGeneric(SoundEffectID.MINING_PICK_SWING_1, SoundEffectID.MINING_PICK_SWING_2);
 		}
-		else if (config.muteMiningOthers())
+		else if (config.muteMiningMode() == MuteMode.ONLY_OTHERS)
 		{
-			// when both are enabled, we only mute the sound when another player is doing it
 			addOtherPlayers(SoundEffectID.MINING_PICK_SWING_1, SoundEffectID.MINING_PICK_SWING_2);
 		}
 		if (config.mutePlankMake())
@@ -716,13 +715,12 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.STRING_JEWELLERY);
 		}
-		if (config.muteWoodcutting() && !config.muteWoodcuttingOthers())
+		if (config.muteWoodcuttingMode() == MuteMode.ALL)
 		{
 			addGeneric(SoundEffectID.WOODCUTTING_CHOP);
 		}
-		else if (config.muteWoodcuttingOthers())
+		else if (config.muteWoodcuttingMode() == MuteMode.ONLY_OTHERS)
 		{
-			// when both are enabled, we only mute the sound when another player is doing it
 			addOtherPlayers(SoundEffectID.WOODCUTTING_CHOP);
 		}
 		if (config.muteChargeOrb())
@@ -882,13 +880,12 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.TELEOTHER);
 		}
-		if (config.muteTeleport() && !config.muteTeleportOthers())
+		if (config.muteTeleportMode() == MuteMode.ALL)
 		{
 			addGeneric(SoundEffectID.TELEPORT_VWOOP, SoundEffectID.TWIN_GIANT_SOUL_AMULET_TELEPORT1, SoundEffectID.TWIN_GIANT_SOUL_AMULET_TELEPORT2);
 		}
-		else if (config.muteTeleportOthers())
+		else if (config.muteTeleportMode() == MuteMode.ONLY_OTHERS)
 		{
-			// when both are enabled, we only mute the sound when another player is doing it
 			addAnimation(SoundEffectID.TELEPORT_VWOOP, TELEPORT_ANIMATIONS);
 			addAnimation(SoundEffectID.TWIN_GIANT_SOUL_AMULET_TELEPORT1, TELEPORT_ANIMATIONS);
 			addAnimation(SoundEffectID.TWIN_GIANT_SOUL_AMULET_TELEPORT2, TELEPORT_ANIMATIONS);
@@ -1246,6 +1243,82 @@ public class AnnoyanceMutePlugin extends Plugin
 	// so nobody loses their settings, then remove the old config
 	@VisibleForTesting
 	void migrate()
+	{
+		migrateRegionalAmbientSounds();
+		migrateTeleportMode();
+		migrateHumidifyMode();
+		migrateMuteAll("muteMining");
+		migrateMuteAll("muteWoodcutting");
+	}
+
+	// Teleport used to be two checkboxes, "Teleport" and "Teleport (only others)", it is now a single Off / Only Others / All option
+	// that reuses the "muteTeleport" key. Unchanged values are not stored, so a missing value means the old default (all: off, only others: on)
+	private void migrateTeleportMode()
+	{
+		String all = configManager.getConfiguration(CONFIG_GROUP, "muteTeleport");
+		String others = configManager.getConfiguration(CONFIG_GROUP, "muteTeleportOthers");
+		boolean legacyAll = "true".equals(all) || "false".equals(all);
+		if (!legacyAll && others == null)
+		{
+			return;
+		}
+
+		MuteMode mode = MuteMode.OFF;
+		if (!"false".equals(others))
+		{
+			mode = MuteMode.ONLY_OTHERS;
+		}
+		else if ("true".equals(all))
+		{
+			mode = MuteMode.ALL;
+		}
+
+		configManager.setConfiguration(CONFIG_GROUP, "muteTeleport", mode);
+		configManager.unsetConfiguration(CONFIG_GROUP, "muteTeleportOthers");
+	}
+
+	// Humidify used to be two checkboxes, "Humidify" and "Humidify (only others)", it is now a single Off / Only Others / All option
+	// that reuses the "muteAreaOfEffectSpells" key. Unchanged values are not stored, so a missing value means the old default (both on).
+	// "Humidify" took priority when both were on, so that is checked first
+	private void migrateHumidifyMode()
+	{
+		String all = configManager.getConfiguration(CONFIG_GROUP, "muteAreaOfEffectSpells");
+		String others = configManager.getConfiguration(CONFIG_GROUP, "muteOthersHumidfy");
+		boolean legacyAll = "true".equals(all) || "false".equals(all);
+		if (!legacyAll && others == null)
+		{
+			return;
+		}
+
+		MuteMode mode = MuteMode.OFF;
+		if (!"false".equals(all))
+		{
+			mode = MuteMode.ALL;
+		}
+		else if (!"false".equals(others))
+		{
+			mode = MuteMode.ONLY_OTHERS;
+		}
+
+		configManager.setConfiguration(CONFIG_GROUP, "muteAreaOfEffectSpells", mode);
+		configManager.unsetConfiguration(CONFIG_GROUP, "muteOthersHumidfy");
+	}
+
+	// Mining and woodcutting used to be a plain checkbox under the same key, enabled meant muting everything
+	private void migrateMuteAll(String key)
+	{
+		String value = configManager.getConfiguration(CONFIG_GROUP, key);
+		if ("true".equals(value))
+		{
+			configManager.setConfiguration(CONFIG_GROUP, key, MuteMode.ALL);
+		}
+		else if ("false".equals(value))
+		{
+			configManager.setConfiguration(CONFIG_GROUP, key, MuteMode.OFF);
+		}
+	}
+
+	private void migrateRegionalAmbientSounds()
 	{
 		String regional = configManager.getConfiguration(CONFIG_GROUP, LEGACY_REGIONAL_KEY);
 		if (regional == null)

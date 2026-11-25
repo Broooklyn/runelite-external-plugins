@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -65,7 +66,7 @@ public class AnnoyanceMuteTests
 	@Test
 	public void muteWoodcutting()
 	{
-		when(config.muteWoodcutting()).thenReturn(true);
+		when(config.muteWoodcuttingMode()).thenReturn(MuteMode.ALL);
 
 		ConfigChanged configChanged = new ConfigChanged();
 		configChanged.setGroup("annoyancemute");
@@ -81,12 +82,11 @@ public class AnnoyanceMuteTests
 		Player localPlayer = mock(Player.class);
 		Player otherPlayer = mock(Player.class);
 		when(client.getLocalPlayer()).thenReturn(localPlayer);
-		when(config.muteWoodcutting()).thenReturn(true);
-		when(config.muteWoodcuttingOthers()).thenReturn(true);
+		when(config.muteWoodcuttingMode()).thenReturn(MuteMode.ONLY_OTHERS);
 
 		ConfigChanged configChanged = new ConfigChanged();
 		configChanged.setGroup("annoyancemute");
-		configChanged.setKey("muteWoodcuttingOthers");
+		configChanged.setKey("muteWoodcutting");
 		plugin.onConfigChanged(configChanged);
 
 		assertTrue(plugin.shouldMute(SoundEffectID.WOODCUTTING_CHOP, SoundEffectType.AREA_SOUND_EFFECT, otherPlayer));
@@ -100,11 +100,11 @@ public class AnnoyanceMuteTests
 		Player localPlayer = mock(Player.class);
 		Player otherPlayer = mock(Player.class);
 		when(client.getLocalPlayer()).thenReturn(localPlayer);
-		when(config.muteMiningOthers()).thenReturn(true);
+		when(config.muteMiningMode()).thenReturn(MuteMode.ONLY_OTHERS);
 
 		ConfigChanged configChanged = new ConfigChanged();
 		configChanged.setGroup("annoyancemute");
-		configChanged.setKey("muteMiningOthers");
+		configChanged.setKey("muteMining");
 		plugin.onConfigChanged(configChanged);
 
 		assertTrue(plugin.shouldMute(SoundEffectID.MINING_PICK_SWING_1, SoundEffectType.AREA_SOUND_EFFECT, otherPlayer));
@@ -173,9 +173,7 @@ public class AnnoyanceMuteTests
 	@Test
 	public void muteTeleportOthers()
 	{
-		// when true/true like this, we only mute the sound when another player is doing it
-		when(config.muteTeleport()).thenReturn(true);
-		when(config.muteTeleportOthers()).thenReturn(true);
+		when(config.muteTeleportMode()).thenReturn(MuteMode.ONLY_OTHERS);
 
 		ConfigChanged configChanged = new ConfigChanged();
 		configChanged.setGroup("annoyancemute");
@@ -192,9 +190,7 @@ public class AnnoyanceMuteTests
 	@Test
 	public void muteTeleportOthers2()
 	{
-		// when true/false like this, we only mute the sound when another player is doing it
-		when(config.muteTeleport()).thenReturn(false);
-		when(config.muteTeleportOthers()).thenReturn(true);
+		when(config.muteTeleportMode()).thenReturn(MuteMode.ONLY_OTHERS);
 
 		ConfigChanged configChanged = new ConfigChanged();
 		configChanged.setGroup("annoyancemute");
@@ -211,9 +207,7 @@ public class AnnoyanceMuteTests
 	@Test
 	public void muteTeleports()
 	{
-		// when true/false like this, we will always mute the sounds
-		when(config.muteTeleport()).thenReturn(true);
-		when(config.muteTeleportOthers()).thenReturn(false);
+		when(config.muteTeleportMode()).thenReturn(MuteMode.ALL);
 
 		ConfigChanged configChanged = new ConfigChanged();
 		configChanged.setGroup("annoyancemute");
@@ -230,9 +224,7 @@ public class AnnoyanceMuteTests
 	@Test
 	public void muteTeleports2()
 	{
-		// when true/false like this, we will always mute the sounds
-		when(config.muteTeleport()).thenReturn(true);
-		when(config.muteTeleportOthers()).thenReturn(false);
+		when(config.muteTeleportMode()).thenReturn(MuteMode.ALL);
 
 		ConfigChanged configChanged = new ConfigChanged();
 		configChanged.setGroup("annoyancemute");
@@ -250,8 +242,7 @@ public class AnnoyanceMuteTests
 	public void teleportMakesNoise()
 	{
 		// when false/false like this, we won't mute
-		when(config.muteTeleport()).thenReturn(false);
-		when(config.muteTeleportOthers()).thenReturn(false);
+		when(config.muteTeleportMode()).thenReturn(MuteMode.OFF);
 
 		ConfigChanged configChanged = new ConfigChanged();
 		configChanged.setGroup("annoyancemute");
@@ -358,5 +349,127 @@ public class AnnoyanceMuteTests
 
 		verify(configManager, never()).setConfiguration(any(), any(), anyString());
 		verify(configManager, never()).unsetConfiguration(any(), any());
+	}
+
+	@Test
+	public void migrateTeleportOthersEnabledMutesOnlyOthers()
+	{
+		when(configManager.getConfiguration("annoyancemute", "muteTeleport")).thenReturn("true");
+		when(configManager.getConfiguration("annoyancemute", "muteTeleportOthers")).thenReturn("true");
+
+		plugin.migrate();
+
+		verify(configManager).setConfiguration("annoyancemute", "muteTeleport", MuteMode.ONLY_OTHERS);
+		verify(configManager).unsetConfiguration("annoyancemute", "muteTeleportOthers");
+	}
+
+	@Test
+	public void migrateTeleportOthersUnchangedDefaultsToOnlyOthers()
+	{
+		when(configManager.getConfiguration("annoyancemute", "muteTeleport")).thenReturn("false");
+
+		plugin.migrate();
+
+		verify(configManager).setConfiguration("annoyancemute", "muteTeleport", MuteMode.ONLY_OTHERS);
+	}
+
+	@Test
+	public void migrateTeleportAllMutesAll()
+	{
+		when(configManager.getConfiguration("annoyancemute", "muteTeleport")).thenReturn("true");
+		when(configManager.getConfiguration("annoyancemute", "muteTeleportOthers")).thenReturn("false");
+
+		plugin.migrate();
+
+		verify(configManager).setConfiguration("annoyancemute", "muteTeleport", MuteMode.ALL);
+	}
+
+	@Test
+	public void migrateTeleportNeitherIsOff()
+	{
+		when(configManager.getConfiguration("annoyancemute", "muteTeleport")).thenReturn("false");
+		when(configManager.getConfiguration("annoyancemute", "muteTeleportOthers")).thenReturn("false");
+
+		plugin.migrate();
+
+		verify(configManager).setConfiguration("annoyancemute", "muteTeleport", MuteMode.OFF);
+	}
+
+	@Test
+	public void migrateTeleportDoesNothingOnceMigrated()
+	{
+		when(configManager.getConfiguration("annoyancemute", "muteTeleport")).thenReturn("ALL");
+
+		plugin.migrate();
+
+		verify(configManager, never()).setConfiguration(any(), eq("muteTeleport"), any());
+		verify(configManager, never()).unsetConfiguration(any(), any());
+	}
+
+	@Test
+	public void migrateMiningAndWoodcuttingFromCheckbox()
+	{
+		when(configManager.getConfiguration("annoyancemute", "muteMining")).thenReturn("true");
+		when(configManager.getConfiguration("annoyancemute", "muteWoodcutting")).thenReturn("false");
+
+		plugin.migrate();
+
+		verify(configManager).setConfiguration("annoyancemute", "muteMining", MuteMode.ALL);
+		verify(configManager).setConfiguration("annoyancemute", "muteWoodcutting", MuteMode.OFF);
+	}
+
+	@Test
+	public void migrateMiningAndWoodcuttingDoesNothingOnceMigrated()
+	{
+		when(configManager.getConfiguration("annoyancemute", "muteMining")).thenReturn("ONLY_OTHERS");
+		when(configManager.getConfiguration("annoyancemute", "muteWoodcutting")).thenReturn("ALL");
+
+		plugin.migrate();
+
+		verify(configManager, never()).setConfiguration(any(), eq("muteMining"), any());
+		verify(configManager, never()).setConfiguration(any(), eq("muteWoodcutting"), any());
+	}
+
+	@Test
+	public void migrateHumidifyOffWithOthersUnchangedMutesOnlyOthers()
+	{
+		when(configManager.getConfiguration("annoyancemute", "muteAreaOfEffectSpells")).thenReturn("false");
+
+		plugin.migrate();
+
+		verify(configManager).setConfiguration("annoyancemute", "muteAreaOfEffectSpells", MuteMode.ONLY_OTHERS);
+	}
+
+	@Test
+	public void migrateHumidifyOthersOffMutesAll()
+	{
+		when(configManager.getConfiguration("annoyancemute", "muteOthersHumidfy")).thenReturn("false");
+
+		plugin.migrate();
+
+		verify(configManager).setConfiguration("annoyancemute", "muteAreaOfEffectSpells", MuteMode.ALL);
+		verify(configManager).unsetConfiguration("annoyancemute", "muteOthersHumidfy");
+	}
+
+	@Test
+	public void migrateHumidifyNeitherIsOff()
+	{
+		when(configManager.getConfiguration("annoyancemute", "muteAreaOfEffectSpells")).thenReturn("false");
+		when(configManager.getConfiguration("annoyancemute", "muteOthersHumidfy")).thenReturn("false");
+
+		plugin.migrate();
+
+		verify(configManager).setConfiguration("annoyancemute", "muteAreaOfEffectSpells", MuteMode.OFF);
+	}
+
+	@Test
+	public void migrateHumidifyDoesNothingOnceMigrated()
+	{
+		when(configManager.getConfiguration("annoyancemute", "muteAreaOfEffectSpells")).thenReturn("ONLY_OTHERS");
+
+		plugin.migrate();
+
+		verify(configManager, never()).setConfiguration(any(), eq("muteAreaOfEffectSpells"), any());
+		verify(configManager, never()).unsetConfiguration(any(), eq("muteOthersHumidfy"));
 	}
 }

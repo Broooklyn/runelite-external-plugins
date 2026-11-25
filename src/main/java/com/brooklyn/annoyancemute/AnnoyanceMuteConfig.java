@@ -96,23 +96,12 @@ public interface AnnoyanceMuteConfig extends Config
 	@ConfigItem(
 		keyName = "muteAreaOfEffectSpells",
 		name = "Humidify",
-		description = "Mutes humidify spell sound",
+		description = "Mutes the humidify spell sound",
 		section = skillingSection
 	)
-	default boolean muteAOESounds()
+	default MuteMode muteHumidifyMode()
 	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "muteOthersHumidfy",
-		name = "Humidify (only others)",
-		description = "Mutes the sound of other players' humidify",
-		section = skillingSection
-	)
-	default boolean muteOthersHumidify()
-	{
-		return true;
+		return MuteMode.ALL;
 	}
 
 	@ConfigItem(
@@ -292,25 +281,14 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "muteTeleport",
+		keyName = "muteTeleportMode",
 		name = "Teleport",
-		description = "Mutes the teleport vwoop sound",
+		description = "Mutes the teleport sounds",
 		section = miscSection
 	)
-	default boolean muteTeleport()
+	default MuteMode muteTeleportMode()
 	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteTeleportOthers",
-		name = "Teleport (only others)",
-		description = "Mutes the sound of other players' teleports",
-		section = miscSection
-	)
-	default boolean muteTeleportOthers()
-	{
-		return true;
+		return MuteMode.ONLY_OTHERS;
 	}
 
 	@ConfigItem(
@@ -562,20 +540,9 @@ public interface AnnoyanceMuteConfig extends Config
 		description = "Mutes the sound of Woodcutting",
 		section = skillingSection
 	)
-	default boolean muteWoodcutting()
+	default MuteMode muteWoodcuttingMode()
 	{
-		return true;
-	}
-
-	@ConfigItem(
-		keyName = "muteWoodcuttingOthers",
-		name = "Woodcutting (only others)",
-		description = "Mutes the sound of other players' Woodcutting",
-		section = skillingSection
-	)
-	default boolean muteWoodcuttingOthers()
-	{
-		return false;
+		return MuteMode.ALL;
 	}
 
 	@ConfigItem(
@@ -683,20 +650,9 @@ public interface AnnoyanceMuteConfig extends Config
 		description = "Mutes the sounds of Mining",
 		section = skillingSection
 	)
-	default boolean muteMining()
+	default MuteMode muteMiningMode()
 	{
-		return false;
-	}
-
-	@ConfigItem(
-		keyName = "muteMiningOthers",
-		name = "Mining (only others)",
-		description = "Mutes the sounds of other players' Mining",
-		section = skillingSection
-	)
-	default boolean muteMiningOthers()
-	{
-		return false;
+		return MuteMode.OFF;
 	}
 
 	@ConfigItem(
