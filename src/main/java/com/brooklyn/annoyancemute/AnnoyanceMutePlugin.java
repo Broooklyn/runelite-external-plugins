@@ -62,6 +62,7 @@ import net.runelite.api.events.AmbientSoundChanged;
 import net.runelite.api.events.AmbientSoundEffectCreated;
 import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.gameval.AmbientSoundID;
+import net.runelite.api.gameval.AnimationID;
 import net.runelite.api.gameval.ObjectID;
 import net.runelite.api.gameval.VarbitID;
 import net.runelite.api.events.AreaSoundEffectPlayed;
@@ -94,6 +95,10 @@ public class AnnoyanceMutePlugin extends Plugin
 	private static final int ARDOUGNE_TELEPORT_ANIMATION = 3872;
 	private static final int BURGH_TELEPORT_ANIMATION = 3874;
 
+	// not sure what VFX is but the first one is for sure right
+	private static final int ROYAL_TITANS_TELEPORT_ANIMATION1 = AnimationID.HUMAN_TELEPORT_GIANTSOUL_AMULET_01;
+	private static final int ROYAL_TITANS_TELEPORT_ANIMATION2 = AnimationID.VFX_HUMAN_TELEPORT_GIANTSOUL_AMULET_01;
+
 	private static final int[] TELEPORT_ANIMATIONS = {
 		NORMAL_TELEPORT_ANIMATION,
 		LUNAR_TELEPORT_ANIMATION,
@@ -102,7 +107,9 @@ public class AnnoyanceMutePlugin extends Plugin
 		WILDERNESS_TELEPORT_ANIMATION,
 		CABBAGE_TELEPORT_ANIMATION,
 		ARDOUGNE_TELEPORT_ANIMATION,
-		BURGH_TELEPORT_ANIMATION
+		BURGH_TELEPORT_ANIMATION,
+		ROYAL_TITANS_TELEPORT_ANIMATION1,
+		ROYAL_TITANS_TELEPORT_ANIMATION2,
 	};
 
 	private static final String CONFIG_GROUP = "annoyancemute";
@@ -877,12 +884,14 @@ public class AnnoyanceMutePlugin extends Plugin
 		}
 		if (config.muteTeleport() && !config.muteTeleportOthers())
 		{
-			addGeneric(SoundEffectID.TELEPORT_VWOOP);
+			addGeneric(SoundEffectID.TELEPORT_VWOOP, SoundEffectID.TWIN_GIANT_SOUL_AMULET_TELEPORT1, SoundEffectID.TWIN_GIANT_SOUL_AMULET_TELEPORT2);
 		}
 		else if (config.muteTeleportOthers())
 		{
 			// when both are enabled, we only mute the sound when another player is doing it
 			addAnimation(SoundEffectID.TELEPORT_VWOOP, TELEPORT_ANIMATIONS);
+			addAnimation(SoundEffectID.TWIN_GIANT_SOUL_AMULET_TELEPORT1, TELEPORT_ANIMATIONS);
+			addAnimation(SoundEffectID.TWIN_GIANT_SOUL_AMULET_TELEPORT2, TELEPORT_ANIMATIONS);
 		}
 		if (config.muteRubberChickenSounds())
 		{
