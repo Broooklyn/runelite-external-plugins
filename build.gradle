@@ -52,7 +52,7 @@ tasks.register('run', JavaExec) {
 		// RuneLite's macOS fullscreen adapter needs access to com.apple.eawt
 		jvmArgs "--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED"
 	}
-	args "--developer-mode", "--debug", "--profile=ironman"
+	args "--developer-mode", "--debug"
 }
 
 tasks.register('shadowJar', Jar) {
