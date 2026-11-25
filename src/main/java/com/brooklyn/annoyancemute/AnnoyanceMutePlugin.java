@@ -1258,13 +1258,15 @@ public class AnnoyanceMutePlugin extends Plugin
 		String all = configManager.getConfiguration(CONFIG_GROUP, "muteTeleport");
 		String others = configManager.getConfiguration(CONFIG_GROUP, "muteTeleportOthers");
 
-		if (all == null || others == null)
+		// unchanged values are not stored, so only skip when neither was ever changed
+		if (all == null && others == null)
 		{
 			return;
 		}
 
-		boolean legacyAll = Boolean.parseBoolean(all);
-		boolean legacyOthers = Boolean.parseBoolean(others);
+		// a missing value means the old default: Teleport off, only others on
+		boolean legacyAll = all != null && Boolean.parseBoolean(all);
+		boolean legacyOthers = others == null || Boolean.parseBoolean(others);
 
 		MuteMode mode = MuteMode.OFF;
 
@@ -1289,13 +1291,15 @@ public class AnnoyanceMutePlugin extends Plugin
 	{
 		String all = configManager.getConfiguration(CONFIG_GROUP, "muteAreaOfEffectSpells");
 		String others = configManager.getConfiguration(CONFIG_GROUP, "muteOthersHumidfy");
-		if (all == null || others == null)
+		// unchanged values are not stored, so only skip when neither was ever changed
+		if (all == null && others == null)
 		{
 			return;
 		}
 
-		boolean legacyAll = Boolean.parseBoolean(all);
-		boolean legacyOthers = Boolean.parseBoolean(others);
+		// a missing value means the old default: both on
+		boolean legacyAll = all == null || Boolean.parseBoolean(all);
+		boolean legacyOthers = others == null || Boolean.parseBoolean(others);
 
 		MuteMode mode = MuteMode.OFF;
 

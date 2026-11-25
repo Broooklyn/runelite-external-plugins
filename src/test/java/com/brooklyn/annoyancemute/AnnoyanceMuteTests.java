@@ -351,125 +351,181 @@ public class AnnoyanceMuteTests
 		verify(configManager, never()).unsetConfiguration(any(), any());
 	}
 
-	@Test
-	public void migrateTeleportOthersEnabledMutesOnlyOthers()
+	private void legacyConfig(String key, String value)
 	{
-		when(configManager.getConfiguration("annoyancemute", "muteTeleport")).thenReturn("true");
-		when(configManager.getConfiguration("annoyancemute", "muteTeleportOthers")).thenReturn("true");
+		when(configManager.getConfiguration("annoyancemute", key)).thenReturn(value);
+	}
 
-		plugin.migrate();
-
-		verify(configManager).setConfiguration("annoyancemute", "muteTeleport", MuteMode.ONLY_OTHERS);
-		verify(configManager).unsetConfiguration("annoyancemute", "muteTeleportOthers");
+	private void verifyMigrated(String newKey, MuteMode mode, String... oldKeys)
+	{
+		verify(configManager).setConfiguration("annoyancemute", newKey, mode);
+		for (String oldKey : oldKeys)
+		{
+			verify(configManager).unsetConfiguration("annoyancemute", oldKey);
+		}
 	}
 
 	@Test
-	public void migrateTeleportOthersUnchangedDefaultsToOnlyOthers()
+	public void migrateTeleportOthersEnabledMutesOnlyOthers()
 	{
-		when(configManager.getConfiguration("annoyancemute", "muteTeleport")).thenReturn("false");
+		legacyConfig("muteTeleport", "true");
+		legacyConfig("muteTeleportOthers", "true");
 
 		plugin.migrate();
 
-		verify(configManager).setConfiguration("annoyancemute", "muteTeleport", MuteMode.ONLY_OTHERS);
+		verifyMigrated("muteTeleportMode", MuteMode.ONLY_OTHERS, "muteTeleport", "muteTeleportOthers");
+	}
+
+	@Test
+	public void migrateTeleportOthersEnabledWithAllDisabledMutesOnlyOthers()
+	{
+		legacyConfig("muteTeleport", "false");
+		legacyConfig("muteTeleportOthers", "true");
+
+		plugin.migrate();
+
+		verifyMigrated("muteTeleportMode", MuteMode.ONLY_OTHERS, "muteTeleport", "muteTeleportOthers");
 	}
 
 	@Test
 	public void migrateTeleportAllMutesAll()
 	{
-		when(configManager.getConfiguration("annoyancemute", "muteTeleport")).thenReturn("true");
-		when(configManager.getConfiguration("annoyancemute", "muteTeleportOthers")).thenReturn("false");
+		legacyConfig("muteTeleport", "true");
+		legacyConfig("muteTeleportOthers", "false");
 
 		plugin.migrate();
 
-		verify(configManager).setConfiguration("annoyancemute", "muteTeleport", MuteMode.ALL);
+		verifyMigrated("muteTeleportMode", MuteMode.ALL, "muteTeleport", "muteTeleportOthers");
 	}
 
 	@Test
 	public void migrateTeleportNeitherIsOff()
 	{
-		when(configManager.getConfiguration("annoyancemute", "muteTeleport")).thenReturn("false");
-		when(configManager.getConfiguration("annoyancemute", "muteTeleportOthers")).thenReturn("false");
+		legacyConfig("muteTeleport", "false");
+		legacyConfig("muteTeleportOthers", "false");
 
 		plugin.migrate();
 
-		verify(configManager).setConfiguration("annoyancemute", "muteTeleport", MuteMode.OFF);
+		verifyMigrated("muteTeleportMode", MuteMode.OFF, "muteTeleport", "muteTeleportOthers");
 	}
 
 	@Test
-	public void migrateTeleportDoesNothingOnceMigrated()
+	public void migrateTeleportOnlyAllChangedUsesOldOthersDefault()
 	{
-		when(configManager.getConfiguration("annoyancemute", "muteTeleport")).thenReturn("ALL");
+		// others was never changed, so it is still on
+		legacyConfig("muteTeleport", "true");
 
 		plugin.migrate();
 
-		verify(configManager, never()).setConfiguration(any(), eq("muteTeleport"), any());
-		verify(configManager, never()).unsetConfiguration(any(), any());
+		verifyMigrated("muteTeleportMode", MuteMode.ONLY_OTHERS, "muteTeleport", "muteTeleportOthers");
 	}
 
 	@Test
-	public void migrateMiningAndWoodcuttingFromCheckbox()
+	public void migrateTeleportOnlyOthersTurnedOffIsOff()
 	{
-		when(configManager.getConfiguration("annoyancemute", "muteMining")).thenReturn("true");
-		when(configManager.getConfiguration("annoyancemute", "muteWoodcutting")).thenReturn("false");
+		// teleport was never changed, so it is still off
+		legacyConfig("muteTeleportOthers", "false");
 
 		plugin.migrate();
 
-		verify(configManager).setConfiguration("annoyancemute", "muteMining", MuteMode.ALL);
-		verify(configManager).setConfiguration("annoyancemute", "muteWoodcutting", MuteMode.OFF);
+		verifyMigrated("muteTeleportMode", MuteMode.OFF, "muteTeleport", "muteTeleportOthers");
 	}
 
 	@Test
-	public void migrateMiningAndWoodcuttingDoesNothingOnceMigrated()
+	public void migrateTeleportDoesNothingWhenNeverChanged()
 	{
-		when(configManager.getConfiguration("annoyancemute", "muteMining")).thenReturn("ONLY_OTHERS");
-		when(configManager.getConfiguration("annoyancemute", "muteWoodcutting")).thenReturn("ALL");
-
 		plugin.migrate();
 
-		verify(configManager, never()).setConfiguration(any(), eq("muteMining"), any());
-		verify(configManager, never()).setConfiguration(any(), eq("muteWoodcutting"), any());
+		verify(configManager, never()).setConfiguration(any(), eq("muteTeleportMode"), any());
+		verify(configManager, never()).unsetConfiguration(any(), eq("muteTeleport"));
+		verify(configManager, never()).unsetConfiguration(any(), eq("muteTeleportOthers"));
 	}
 
 	@Test
-	public void migrateHumidifyOffWithOthersUnchangedMutesOnlyOthers()
+	public void migrateHumidifyAllMutesAll()
 	{
-		when(configManager.getConfiguration("annoyancemute", "muteAreaOfEffectSpells")).thenReturn("false");
+		legacyConfig("muteAreaOfEffectSpells", "true");
+		legacyConfig("muteOthersHumidfy", "true");
 
 		plugin.migrate();
 
-		verify(configManager).setConfiguration("annoyancemute", "muteAreaOfEffectSpells", MuteMode.ONLY_OTHERS);
+		verifyMigrated("muteHumidifyMode", MuteMode.ALL, "muteAreaOfEffectSpells", "muteOthersHumidfy");
 	}
 
 	@Test
-	public void migrateHumidifyOthersOffMutesAll()
+	public void migrateHumidifyOthersOnlyMutesOnlyOthers()
 	{
-		when(configManager.getConfiguration("annoyancemute", "muteOthersHumidfy")).thenReturn("false");
+		legacyConfig("muteAreaOfEffectSpells", "false");
+		legacyConfig("muteOthersHumidfy", "true");
 
 		plugin.migrate();
 
-		verify(configManager).setConfiguration("annoyancemute", "muteAreaOfEffectSpells", MuteMode.ALL);
-		verify(configManager).unsetConfiguration("annoyancemute", "muteOthersHumidfy");
+		verifyMigrated("muteHumidifyMode", MuteMode.ONLY_OTHERS, "muteAreaOfEffectSpells", "muteOthersHumidfy");
 	}
 
 	@Test
 	public void migrateHumidifyNeitherIsOff()
 	{
-		when(configManager.getConfiguration("annoyancemute", "muteAreaOfEffectSpells")).thenReturn("false");
-		when(configManager.getConfiguration("annoyancemute", "muteOthersHumidfy")).thenReturn("false");
+		legacyConfig("muteAreaOfEffectSpells", "false");
+		legacyConfig("muteOthersHumidfy", "false");
 
 		plugin.migrate();
 
-		verify(configManager).setConfiguration("annoyancemute", "muteAreaOfEffectSpells", MuteMode.OFF);
+		verifyMigrated("muteHumidifyMode", MuteMode.OFF, "muteAreaOfEffectSpells", "muteOthersHumidfy");
 	}
 
 	@Test
-	public void migrateHumidifyDoesNothingOnceMigrated()
+	public void migrateHumidifyOnlyAllTurnedOffUsesOldOthersDefault()
 	{
-		when(configManager.getConfiguration("annoyancemute", "muteAreaOfEffectSpells")).thenReturn("ONLY_OTHERS");
+		// others was never changed, so it is still on
+		legacyConfig("muteAreaOfEffectSpells", "false");
 
 		plugin.migrate();
 
-		verify(configManager, never()).setConfiguration(any(), eq("muteAreaOfEffectSpells"), any());
+		verifyMigrated("muteHumidifyMode", MuteMode.ONLY_OTHERS, "muteAreaOfEffectSpells", "muteOthersHumidfy");
+	}
+
+	@Test
+	public void migrateHumidifyOnlyOthersTurnedOffMutesAll()
+	{
+		// humidify was never changed, so it is still on
+		legacyConfig("muteOthersHumidfy", "false");
+
+		plugin.migrate();
+
+		verifyMigrated("muteHumidifyMode", MuteMode.ALL, "muteAreaOfEffectSpells", "muteOthersHumidfy");
+	}
+
+	@Test
+	public void migrateHumidifyDoesNothingWhenNeverChanged()
+	{
+		plugin.migrate();
+
+		verify(configManager, never()).setConfiguration(any(), eq("muteHumidifyMode"), any());
+		verify(configManager, never()).unsetConfiguration(any(), eq("muteAreaOfEffectSpells"));
 		verify(configManager, never()).unsetConfiguration(any(), eq("muteOthersHumidfy"));
+	}
+
+	@Test
+	public void migrateMiningAndWoodcuttingFromCheckbox()
+	{
+		legacyConfig("muteMining", "true");
+		legacyConfig("muteWoodcutting", "false");
+
+		plugin.migrate();
+
+		verifyMigrated("muteMiningMode", MuteMode.ALL, "muteMining");
+		verifyMigrated("muteWoodcuttingMode", MuteMode.OFF, "muteWoodcutting");
+	}
+
+	@Test
+	public void migrateMiningAndWoodcuttingDoesNothingWithoutOldValues()
+	{
+		plugin.migrate();
+
+		verify(configManager, never()).setConfiguration(any(), eq("muteMiningMode"), any());
+		verify(configManager, never()).setConfiguration(any(), eq("muteWoodcuttingMode"), any());
+		verify(configManager, never()).unsetConfiguration(any(), eq("muteMining"));
+		verify(configManager, never()).unsetConfiguration(any(), eq("muteWoodcutting"));
 	}
 }
