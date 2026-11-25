@@ -1162,7 +1162,9 @@ public class AnnoyanceMutePlugin extends Plugin
 			}
 		}
 
-		if (hasOtherPlayers && source instanceof Player && source != client.getLocalPlayer())
+		// "only others" sounds are sometimes played without a source when another player makes them,
+		// so anything that is not the local player counts as someone else
+		if (hasOtherPlayers && source != client.getLocalPlayer())
 		{
 			return true;
 		}
