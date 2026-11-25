@@ -96,6 +96,46 @@ public class AnnoyanceMuteTests
 	}
 
 	@Test
+	public void muteFletchingAllMutesEveryFletchingSound()
+	{
+		when(config.muteFletchingMode()).thenReturn(MuteMode.ALL);
+
+		ConfigChanged configChanged = new ConfigChanged();
+		configChanged.setGroup("annoyancemute");
+		configChanged.setKey("muteFletching");
+		plugin.onConfigChanged(configChanged);
+
+		Player localPlayer = mock(Player.class);
+		when(client.getLocalPlayer()).thenReturn(localPlayer);
+		for (int soundId : new int[]{SoundEffectID.FLETCHING_CUT, SoundEffectID.AMETHYST_FLETCHING, 3766, 3767, 3768, 3769})
+		{
+			assertTrue(plugin.shouldMute(soundId, SoundEffectType.SOUND_EFFECT, localPlayer));
+			assertTrue(plugin.shouldMute(soundId, SoundEffectType.AREA_SOUND_EFFECT, mock(Player.class)));
+		}
+	}
+
+	@Test
+	public void muteFletchingOnlyOthers()
+	{
+		Player localPlayer = mock(Player.class);
+		when(client.getLocalPlayer()).thenReturn(localPlayer);
+		when(config.muteFletchingMode()).thenReturn(MuteMode.ONLY_OTHERS);
+
+		ConfigChanged configChanged = new ConfigChanged();
+		configChanged.setGroup("annoyancemute");
+		configChanged.setKey("muteFletching");
+		plugin.onConfigChanged(configChanged);
+
+		for (int soundId : new int[]{SoundEffectID.FLETCHING_CUT, SoundEffectID.AMETHYST_FLETCHING, 3766, 3767, 3768, 3769})
+		{
+			assertTrue(plugin.shouldMute(soundId, SoundEffectType.AREA_SOUND_EFFECT, mock(Player.class)));
+			// the source is sometimes missing when another player does it
+			assertTrue(plugin.shouldMute(soundId, SoundEffectType.AREA_SOUND_EFFECT, null));
+			assertFalse(plugin.shouldMute(soundId, SoundEffectType.SOUND_EFFECT, localPlayer));
+		}
+	}
+
+	@Test
 	public void muteFishingAllMutesLocalPlayerAndOthers()
 	{
 		Player localPlayer = mock(Player.class);
@@ -565,12 +605,14 @@ public class AnnoyanceMuteTests
 		legacyConfig("muteMining", "true");
 		legacyConfig("muteWoodcutting", "false");
 		legacyConfig("muteFishing", "false");
+		legacyConfig("muteFletching", "true");
 
 		plugin.migrate();
 
 		verifyMigrated("muteMiningMode", MuteMode.ALL, "muteMining");
 		verifyMigrated("muteWoodcuttingMode", MuteMode.OFF, "muteWoodcutting");
 		verifyMigrated("muteFishingMode", MuteMode.OFF, "muteFishing");
+		verifyMigrated("muteFletchingMode", MuteMode.ALL, "muteFletching");
 	}
 
 	@Test
@@ -582,6 +624,8 @@ public class AnnoyanceMuteTests
 		verify(configManager, never()).setConfiguration(any(), eq("muteWoodcuttingMode"), any());
 		verify(configManager, never()).setConfiguration(any(), eq("muteFishingMode"), any());
 		verify(configManager, never()).unsetConfiguration(any(), eq("muteFishing"));
+		verify(configManager, never()).setConfiguration(any(), eq("muteFletchingMode"), any());
+		verify(configManager, never()).unsetConfiguration(any(), eq("muteFletching"));
 		verify(configManager, never()).unsetConfiguration(any(), eq("muteMining"));
 		verify(configManager, never()).unsetConfiguration(any(), eq("muteWoodcutting"));
 	}

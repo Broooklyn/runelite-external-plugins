@@ -634,14 +634,14 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "muteFletching",
+		keyName = "muteFletchingMode",
 		name = "Fletching",
 		description = "Mutes the sound of Fletching",
 		section = skillingSection
 	)
-	default boolean muteFletching()
+	default MuteMode muteFletchingMode()
 	{
-		return false;
+		return MuteMode.OFF;
 	}
 
 	@ConfigItem(

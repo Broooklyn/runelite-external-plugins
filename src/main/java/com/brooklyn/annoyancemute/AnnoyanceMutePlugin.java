@@ -85,6 +85,15 @@ import net.runelite.client.util.Text;
 )
 public class AnnoyanceMutePlugin extends Plugin
 {
+	private static final int[] FLETCHING_SOUNDS = {
+		SoundEffectID.FLETCHING_CUT,
+		SoundEffectID.AMETHYST_FLETCHING,
+		SoundEffectID.STRING_BOW_PLUCK_STRING,
+		SoundEffectID.STRING_BOW_PULL_STRING,
+		SoundEffectID.STRING_BOW_TENSION_STRING,
+		SoundEffectID.STRING_BOW_TIE_STRING
+	};
+
 	// Animations that play when a player teleports
 	private static final int NORMAL_TELEPORT_ANIMATION = 714;
 	private static final int LUNAR_TELEPORT_ANIMATION = 1816;
@@ -683,9 +692,13 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addOtherPlayers(SoundEffectID.FISHING_SOUND);
 		}
-		if (config.muteFletching())
+		if (config.muteFletchingMode() == MuteMode.ALL)
 		{
-			addGeneric(SoundEffectID.FLETCHING_CUT, SoundEffectID.AMETHYST_FLETCHING);
+			addGeneric(FLETCHING_SOUNDS);
+		}
+		else if (config.muteFletchingMode() == MuteMode.ONLY_OTHERS)
+		{
+			addOtherPlayers(FLETCHING_SOUNDS);
 		}
 		if (config.muteHumidifyMode() == MuteMode.ALL)
 		{
@@ -1256,6 +1269,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		migrateMuteAll("muteMining", "muteMiningMode");
 		migrateMuteAll("muteWoodcutting", "muteWoodcuttingMode");
 		migrateMuteAll("muteFishing", "muteFishingMode");
+		migrateMuteAll("muteFletching", "muteFletchingMode");
 	}
 
 	// Teleport used to be two checkboxes, "Teleport" and "Teleport (only others)", it is now a single Off / Only Others / All option
@@ -1324,7 +1338,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		configManager.unsetConfiguration(CONFIG_GROUP, "muteOthersHumidfy");
 	}
 
-	// Mining, woodcutting and fishing used to be a plain checkbox under the same key, enabled meant muting everything
+	// Mining, woodcutting, fishing and fletching used to be a plain checkbox under the same key, enabled meant muting everything
 	private void migrateMuteAll(String oldKey, String newKey)
 	{
 		String value = configManager.getConfiguration(CONFIG_GROUP, oldKey);
