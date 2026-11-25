@@ -95,6 +95,37 @@ public class AnnoyanceMuteTests
 	}
 
 	@Test
+	public void muteFishing()
+	{
+		when(config.muteFishingMode()).thenReturn(MuteMode.ALL);
+
+		ConfigChanged configChanged = new ConfigChanged();
+		configChanged.setGroup("annoyancemute");
+		configChanged.setKey("muteFishing");
+		plugin.onConfigChanged(configChanged);
+
+		assertTrue(plugin.shouldMute(SoundEffectID.FISHING_SOUND, SoundEffectType.EITHER, null));
+	}
+
+	@Test
+	public void muteFishingOnlyOthers()
+	{
+		Player localPlayer = mock(Player.class);
+		Player otherPlayer = mock(Player.class);
+		when(client.getLocalPlayer()).thenReturn(localPlayer);
+		when(config.muteFishingMode()).thenReturn(MuteMode.ONLY_OTHERS);
+
+		ConfigChanged configChanged = new ConfigChanged();
+		configChanged.setGroup("annoyancemute");
+		configChanged.setKey("muteFishing");
+		plugin.onConfigChanged(configChanged);
+
+		assertTrue(plugin.shouldMute(SoundEffectID.FISHING_SOUND, SoundEffectType.AREA_SOUND_EFFECT, otherPlayer));
+		assertFalse(plugin.shouldMute(SoundEffectID.FISHING_SOUND, SoundEffectType.SOUND_EFFECT, localPlayer));
+		assertFalse(plugin.shouldMute(SoundEffectID.FISHING_SOUND, SoundEffectType.SOUND_EFFECT, null));
+	}
+
+	@Test
 	public void muteMiningOnlyOthers()
 	{
 		Player localPlayer = mock(Player.class);
@@ -511,11 +542,13 @@ public class AnnoyanceMuteTests
 	{
 		legacyConfig("muteMining", "true");
 		legacyConfig("muteWoodcutting", "false");
+		legacyConfig("muteFishing", "false");
 
 		plugin.migrate();
 
 		verifyMigrated("muteMiningMode", MuteMode.ALL, "muteMining");
 		verifyMigrated("muteWoodcuttingMode", MuteMode.OFF, "muteWoodcutting");
+		verifyMigrated("muteFishingMode", MuteMode.OFF, "muteFishing");
 	}
 
 	@Test
@@ -525,6 +558,8 @@ public class AnnoyanceMuteTests
 
 		verify(configManager, never()).setConfiguration(any(), eq("muteMiningMode"), any());
 		verify(configManager, never()).setConfiguration(any(), eq("muteWoodcuttingMode"), any());
+		verify(configManager, never()).setConfiguration(any(), eq("muteFishingMode"), any());
+		verify(configManager, never()).unsetConfiguration(any(), eq("muteFishing"));
 		verify(configManager, never()).unsetConfiguration(any(), eq("muteMining"));
 		verify(configManager, never()).unsetConfiguration(any(), eq("muteWoodcutting"));
 	}

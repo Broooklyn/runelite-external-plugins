@@ -623,14 +623,14 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
-		keyName = "muteFishing",
+		keyName = "muteFishingMode",
 		name = "Fishing",
 		description = "Mutes the sound of Fishing",
 		section = skillingSection
 	)
-	default boolean muteFishing()
+	default MuteMode muteFishingMode()
 	{
-		return true;
+		return MuteMode.ALL;
 	}
 
 	@ConfigItem(

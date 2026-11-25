@@ -675,9 +675,13 @@ public class AnnoyanceMutePlugin extends Plugin
 		{
 			addGeneric(SoundEffectID.FIREMAKING_LOG_BURN, SoundEffectID.FIREMAKING_LOG_LIGHT);
 		}
-		if (config.muteFishing())
+		if (config.muteFishingMode() == MuteMode.ALL)
 		{
 			addGeneric(SoundEffectID.FISHING_SOUND);
+		}
+		else if (config.muteFishingMode() == MuteMode.ONLY_OTHERS)
+		{
+			addOtherPlayers(SoundEffectID.FISHING_SOUND);
 		}
 		if (config.muteFletching())
 		{
@@ -1249,6 +1253,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		migrateHumidifyMode();
 		migrateMuteAll("muteMining", "muteMiningMode");
 		migrateMuteAll("muteWoodcutting", "muteWoodcuttingMode");
+		migrateMuteAll("muteFishing", "muteFishingMode");
 	}
 
 	// Teleport used to be two checkboxes, "Teleport" and "Teleport (only others)", it is now a single Off / Only Others / All option
@@ -1317,7 +1322,7 @@ public class AnnoyanceMutePlugin extends Plugin
 		configManager.unsetConfiguration(CONFIG_GROUP, "muteOthersHumidfy");
 	}
 
-	// Mining and woodcutting used to be a plain checkbox under the same key, enabled meant muting everything
+	// Mining, woodcutting and fishing used to be a plain checkbox under the same key, enabled meant muting everything
 	private void migrateMuteAll(String oldKey, String newKey)
 	{
 		String value = configManager.getConfiguration(CONFIG_GROUP, oldKey);
