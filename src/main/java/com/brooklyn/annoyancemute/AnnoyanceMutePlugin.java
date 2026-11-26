@@ -52,6 +52,7 @@ import net.runelite.api.AmbientSoundComposition;
 import net.runelite.api.Client;
 import net.runelite.api.Deque;
 import net.runelite.api.GameState;
+import net.runelite.api.MidiRequest;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
 import net.runelite.api.Player;
@@ -66,6 +67,7 @@ import net.runelite.api.gameval.AnimationID;
 import net.runelite.api.gameval.ObjectID;
 import net.runelite.api.gameval.VarbitID;
 import net.runelite.api.events.AreaSoundEffectPlayed;
+import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.SoundEffectPlayed;
@@ -185,6 +187,26 @@ public class AnnoyanceMutePlugin extends Plugin
 
 	int currentPlayerRegionId = -1;
 
+	// Jingle (midi archive) ids that play when entering a player owned house, one per house style.
+	// There are no gamevals for jingles
+	private static final Set<Integer> POH_ENTRANCE_JINGLES = ImmutableSet.of(
+		16,  // Tropical Wood
+		18,  // Whitewashed Stone
+		19,  // Fremennik-Style Wood
+		20,  // Basic Wood, Twisted theme
+		21,  // Basic Stone
+		22,  // Fancy Stone
+		112, // Deathly Mansion, Wilderness theme
+		279, // Hosidius
+		286, // Festive (Cosy cabin theme)
+		307, // Canifis
+		308  // Civitas
+	);
+
+	// Music volume to restore on the next client tick after muting a house jingle, -1 when nothing is muted
+	private int pohJingleRestoreVolume = -1;
+	private boolean pohJingleWasPlaying;
+
 	@Provides
 	AnnoyanceMuteConfig provideConfig(ConfigManager configManager)
 	{
@@ -205,7 +227,9 @@ public class AnnoyanceMutePlugin extends Plugin
 		isInPoh = false;
 		soundEffects.clear();
 		soundEffectsById.clear();
+		pohJingleWasPlaying = false;
 		clientThread.invoke(this::restoreAmbientSoundRandomSounds);
+		clientThread.invoke(this::restorePohJingleVolume);
 		reloadScene();
 	}
 
@@ -299,6 +323,11 @@ public class AnnoyanceMutePlugin extends Plugin
 	{
 		GameState gameState = gameStateChanged.getGameState();
 
+		if (gameState == GameState.LOGIN_SCREEN)
+		{
+			restorePohJingleVolume();
+		}
+
 		// the scene is rebuilt on LOADING and the house objects spawn again if we are still in one
 		if (gameState == GameState.LOADING)
 		{
@@ -333,6 +362,74 @@ public class AnnoyanceMutePlugin extends Plugin
 				muteAmbientSounds();
 			}
 		}
+	}
+
+	@Subscribe
+	public void onClientTick(ClientTick e)
+	{
+		boolean playing = config.mutePohJingle() && isPohJinglePlaying();
+
+		// Volume 0 stops the jingle straight away. Restoring one client tick later lets the house music,
+		// which is requested a little after the jingle starts, play as normal
+		if (pohJingleRestoreVolume >= 0)
+		{
+			restorePohJingleVolume();
+		}
+		// Only when the jingle first starts, so a jingle that keeps playing never toggles the volume every tick
+		else if (playing && !pohJingleWasPlaying)
+		{
+			mutePohJingle();
+		}
+
+		pohJingleWasPlaying = playing;
+	}
+
+	private boolean isPohJinglePlaying()
+	{
+		List<MidiRequest> requests = client.getActiveMidiRequests();
+		if (requests == null)
+		{
+			return false;
+		}
+
+		for (MidiRequest request : requests)
+		{
+			if (request.isJingle() && POH_ENTRANCE_JINGLES.contains(request.getArchiveId()))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private void mutePohJingle()
+	{
+		// The Basic Wood jingle also plays in a cutscene in Daddy's Home, leave that one alone
+		if (client.getVarbitValue(VarbitID.CUTSCENE_STATUS) == 1)
+		{
+			return;
+		}
+
+		// getMusicVolume returns the music volume setting, which setMusicVolume does not change
+		int volume = client.getMusicVolume();
+		if (volume <= 0)
+		{
+			return;
+		}
+
+		pohJingleRestoreVolume = volume;
+		client.setMusicVolume(0);
+	}
+
+	private void restorePohJingleVolume()
+	{
+		if (pohJingleRestoreVolume < 0)
+		{
+			return;
+		}
+
+		client.setMusicVolume(pohJingleRestoreVolume);
+		pohJingleRestoreVolume = -1;
 	}
 
 	@Subscribe
