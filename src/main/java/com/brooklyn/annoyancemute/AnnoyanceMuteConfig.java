@@ -292,6 +292,17 @@ public interface AnnoyanceMuteConfig extends Config
 	}
 
 	@ConfigItem(
+		keyName = "mutePohJingle",
+		name = "House Entrance Jingle",
+		description = "Mutes the jingle that plays when entering a player owned house",
+		section = miscSection
+	)
+	default boolean mutePohJingle()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 		keyName = "muteMagicTrees",
 		name = "Magic Trees",
 		description = "Mutes the sound of Magic Trees",
